@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etapa 11 - Matriz GUT</title>
+    <link rel="stylesheet" href="shared-styles.css">
+    <link rel="stylesheet" href="extra-styles.css">
+    <style>
+        .gut-result-card {
+            background: var(--color-bg-secondary);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .gut-result-number { font-size: 48px; font-weight: 800; color: var(--color-primary); margin: 8px 0; }
+        .gut-scale-hint { font-size: 12px; color: var(--color-text-tertiary); margin-top: 6px; }
+        .slider-row { display: flex; align-items: center; gap: 16px; }
+        .slider-row input[type="range"] { flex: 1; }
+        .slider-value {
+            background: var(--color-primary);
+            color: white;
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <div class="stage-info">Etapa 11 de 17</div>
+                <div id="protocoloHeaderTag"></div>
+                <div class="stage-title">📊 Matriz GUT</div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goToList()">← Painel de Etapas</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="progress-bar-card">
+            <div class="progress-info">
+                <span class="progress-label">Progresso da Investigação</span>
+                <span class="progress-percent">Etapa 11 de 17 (65%)</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" style="width:65%"></div></div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-card-header">
+                <h2>🎯 Gravidade, Urgência e Tendência</h2>
+                <p>Avalie cada dimensão de 1 (mais baixo) a 5 (mais alto). O resultado (G × U × T) classifica automaticamente a prioridade do caso.</p>
+            </div>
+
+            <div class="alert" id="alert"></div>
+
+            <form id="stageForm">
+                <div class="form-section">
+                    <div class="form-section-title">⚠️ Gravidade<span class="hint" style="display:inline; margin-left:8px; text-transform:none;">Intensidade do dano causado ou potencial</span></div>
+                    <div class="slider-row">
+                        <input type="range" id="gravidade" min="1" max="5" value="3">
+                        <div class="slider-value" id="gravidadeValue">3</div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">⏱️ Urgência<span class="hint" style="display:inline; margin-left:8px; text-transform:none;">Tempo disponível ou pressão para agir</span></div>
+                    <div class="slider-row">
+                        <input type="range" id="urgencia" min="1" max="5" value="3">
+                        <div class="slider-value" id="urgenciaValue">3</div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">📈 Tendência<span class="hint" style="display:inline; margin-left:8px; text-transform:none;">Probabilidade de o problema se agravar com o tempo</span></div>
+                    <div class="slider-row">
+                        <input type="range" id="tendencia" min="1" max="5" value="3">
+                        <div class="slider-value" id="tendenciaValue">3</div>
+                    </div>
+                </div>
+
+                <div class="gut-result-card">
+                    <div style="font-size:13px; color:var(--color-text-secondary); text-transform:uppercase; font-weight:600; letter-spacing:0.4px;">Resultado GUT (G × U × T)</div>
+                    <div class="gut-result-number" id="resultadoGut">27</div>
+                    <div class="badge" id="classificacaoBadge">Moderada</div>
+                    <div class="gut-scale-hint">1-20: Baixa · 21-60: Moderada · 61-100: Alta · 101-125: Crítica</div>
+                </div>
+
+                <div class="form-actions">
+                    <div>
+                        <button type="submit" class="btn-save">💾 Salvar Etapa</button>
+                        <button type="button" class="btn-back-list" onclick="goToList()">Voltar ao Painel</button>
+                    </div>
+                    <div class="nav-stage-buttons" id="stageNav"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="shared-components.js"></script>
+    <script>
+        const STAGE_NUM = 11;
+
+        function classificarGut(resultado) {
+            if (resultado <= 20) return { label: 'Baixa', cls: 'classificacao-baixa' };
+            if (resultado <= 60) return { label: 'Moderada', cls: 'classificacao-moderada' };
+            if (resultado <= 100) return { label: 'Alta', cls: 'classificacao-alta' };
+            return { label: 'Crítica', cls: 'classificacao-critica' };
+        }
+
+        function recalcular() {
+            const g = parseInt(document.getElementById('gravidade').value);
+            const u = parseInt(document.getElementById('urgencia').value);
+            const t = parseInt(document.getElementById('tendencia').value);
+
+            document.getElementById('gravidadeValue').textContent = g;
+            document.getElementById('urgenciaValue').textContent = u;
+            document.getElementById('tendenciaValue').textContent = t;
+
+            const resultado = g * u * t;
+            document.getElementById('resultadoGut').textContent = resultado;
+
+            const { label, cls } = classificarGut(resultado);
+            const badge = document.getElementById('classificacaoBadge');
+            badge.textContent = label;
+            badge.className = 'badge ' + cls;
+        }
+
+        ['gravidade', 'urgencia', 'tendencia'].forEach(id => {
+            document.getElementById(id).addEventListener('input', recalcular);
+        });
+
+        async function loadData() {
+            const data = await loadStageData(STAGE_NUM);
+            if (data) {
+                setFormValue('gravidade', data.gravidade);
+                setFormValue('urgencia', data.urgencia);
+                setFormValue('tendencia', data.tendencia);
+            }
+            recalcular();
+        }
+
+        document.getElementById('stageForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const g = parseInt(getFormValue('gravidade'));
+            const u = parseInt(getFormValue('urgencia'));
+            const t = parseInt(getFormValue('tendencia'));
+            const resultado = g * u * t;
+            const { label } = classificarGut(resultado);
+
+            const data = {
+                gravidade: g, urgencia: u, tendencia: t,
+                resultado_gut: resultado,
+                classificacao: label.toLowerCase()
+            };
+            saveStageData(STAGE_NUM, data);
+            showAlert('✓ Etapa 11 salva com sucesso!', 'success');
+        });
+
+        renderStageNav(STAGE_NUM);
+        renderProtocoloHeader('protocoloHeaderTag');
+        loadData();
+    </script>
+</body>
+</html>

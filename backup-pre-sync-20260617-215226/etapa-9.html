@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etapa 9 - Disclosure</title>
+    <link rel="stylesheet" href="shared-styles.css">
+    <link rel="stylesheet" href="extra-styles.css">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <div class="stage-info">Etapa 9 de 17</div>
+                <div id="protocoloHeaderTag"></div>
+                <div class="stage-title">💬 Disclosure (Comunicação Transparente)</div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goToList()">← Painel de Etapas</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="progress-bar-card">
+            <div class="progress-info">
+                <span class="progress-label">Progresso da Investigação</span>
+                <span class="progress-percent">Etapa 9 de 17 (53%)</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" style="width:53%"></div></div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-card-header">
+                <h2>📢 Comunicação com Paciente/Família</h2>
+                <p>Registre se houve disclosure (comunicação aberta e transparente sobre o evento) com o residente e/ou seus familiares, conforme boas práticas de segurança do paciente.</p>
+            </div>
+
+            <div class="alert" id="alert"></div>
+
+            <form id="stageForm">
+                <div class="form-section">
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label>O Disclosure foi realizado? <span class="required">*</span></label>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="realizado" id="disc_sim" value="true" required>
+                                    <label for="disc_sim">Sim</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" name="realizado" id="disc_nao" value="false">
+                                    <label for="disc_nao">Não</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section" id="detalhesSection">
+                    <div class="form-section-title">📝 Detalhamento</div>
+                    <div class="form-row cols-2">
+                        <div class="form-group">
+                            <label for="data_disclosure">Data do Disclosure</label>
+                            <input type="date" id="data_disclosure">
+                        </div>
+                        <div class="form-group">
+                            <label for="participantesTags">Participantes<span class="hint">Pressione Enter após cada nome para adicionar</span></label>
+                            <div id="participantesTags"></div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="descricao">Descrição da Comunicação<span class="hint">O que foi comunicado, como a família reagiu, encaminhamentos</span></label>
+                            <textarea id="descricao" placeholder="Descreva o conteúdo e contexto da comunicação realizada" style="min-height:110px"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="observacoes">Observações</label>
+                            <textarea id="observacoes" placeholder="Informações complementares"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <div>
+                        <button type="submit" class="btn-save">💾 Salvar Etapa</button>
+                        <button type="button" class="btn-back-list" onclick="goToList()">Voltar ao Painel</button>
+                    </div>
+                    <div class="nav-stage-buttons" id="stageNav"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="shared-components.js"></script>
+    <script>
+        const STAGE_NUM = 9;
+        let participantesInput;
+
+        function toggleDetalhes() {
+            const realizado = getRadioValue('realizado');
+            document.getElementById('detalhesSection').style.display = (realizado === 'true') ? 'block' : 'none';
+        }
+
+        document.querySelectorAll('input[name="realizado"]').forEach(el => {
+            el.addEventListener('change', toggleDetalhes);
+        });
+
+        async function loadData() {
+            const data = await loadStageData(STAGE_NUM);
+            participantesInput = new TagsInput('participantesTags', data?.participantes || []);
+
+            if (data) {
+                setRadioValue('realizado', String(data.realizado));
+                setFormValue('data_disclosure', data.data_disclosure);
+                setFormValue('descricao', data.descricao);
+                setFormValue('observacoes', data.observacoes);
+            }
+            toggleDetalhes();
+        }
+
+        document.getElementById('stageForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const data = {
+                realizado: getRadioValue('realizado') === 'true',
+                data_disclosure: getFormValue('data_disclosure'),
+                participantes: participantesInput.getTags(),
+                descricao: getFormValue('descricao'),
+                observacoes: getFormValue('observacoes')
+            };
+            saveStageData(STAGE_NUM, data);
+            showAlert('✓ Etapa 9 salva com sucesso!', 'success');
+        });
+
+        renderStageNav(STAGE_NUM);
+        renderProtocoloHeader('protocoloHeaderTag');
+        loadData();
+    </script>
+</body>
+</html>

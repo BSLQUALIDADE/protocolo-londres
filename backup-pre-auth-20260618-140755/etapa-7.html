@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etapa 7 - Fatores Contribuintes</title>
+    <link rel="stylesheet" href="shared-styles.css">
+    <link rel="stylesheet" href="extra-styles.css">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <div class="stage-info">Etapa 7 de 17</div>
+                <div id="protocoloHeaderTag"></div>
+                <div class="stage-title">🔗 Fatores Contribuintes</div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goToList()">← Painel de Etapas</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="progress-bar-card">
+            <div class="progress-info">
+                <span class="progress-label">Progresso da Investigação</span>
+                <span class="progress-percent">Etapa 7 de 17 (41%)</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" style="width:41%"></div></div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-card-header">
+                <h2>🧩 Categorização de Fatores Contribuintes</h2>
+                <p>Classifique cada fator identificado conforme as 7 categorias do modelo de análise de causas (Vincent et al.): Paciente, Tarefa/Tecnologia, Indivíduo, Equipe, Ambiente, Organização e Contexto.</p>
+            </div>
+
+            <div class="alert" id="alert"></div>
+
+            <form id="stageForm">
+                <div class="form-section">
+                    <div id="fatoresTable"></div>
+                    <button type="button" class="btn-add-row" id="btnAddRow">+ Adicionar Fator Contribuinte</button>
+                </div>
+
+                <div class="form-actions">
+                    <div>
+                        <button type="submit" class="btn-save">💾 Salvar Etapa</button>
+                        <button type="button" class="btn-back-list" onclick="goToList()">Voltar ao Painel</button>
+                    </div>
+                    <div class="nav-stage-buttons" id="stageNav"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="shared-components.js"></script>
+    <script>
+        const STAGE_NUM = 7;
+
+        const columns = [
+            {
+                id: 'categoria', label: 'Categoria', type: 'select', width: '180px',
+                options: [
+                    { value: 'paciente', label: 'Paciente' },
+                    { value: 'tarefa_tecnologia', label: 'Tarefa/Tecnologia' },
+                    { value: 'individuo', label: 'Indivíduo' },
+                    { value: 'equipe', label: 'Equipe' },
+                    { value: 'ambiente', label: 'Ambiente' },
+                    { value: 'organizacao', label: 'Organização' },
+                    { value: 'contexto', label: 'Contexto Institucional' }
+                ]
+            },
+            { id: 'descricao', label: 'Descrição', type: 'textarea' },
+            { id: 'evidencia', label: 'Evidência', type: 'textarea' },
+            { id: 'observacoes', label: 'Observações', type: 'textarea' }
+        ];
+
+        let table;
+
+        async function loadData() {
+            const data = await loadStageData(STAGE_NUM);
+            table = new DynamicTable('fatoresTable', columns, data?.fatores_contribuintes || []);
+        }
+
+        document.getElementById('btnAddRow').addEventListener('click', () => table.addRow());
+
+        document.getElementById('stageForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveStageData(STAGE_NUM, { fatores_contribuintes: table.getData() });
+            showAlert('✓ Etapa 7 salva com sucesso!', 'success');
+        });
+
+        if (!exigirAutenticacao()) { /* guard-stop */ } else {
+        renderStageNav(STAGE_NUM);
+        renderProtocoloHeader('protocoloHeaderTag');
+        loadData();
+        }
+    </script>
+</body>
+</html>

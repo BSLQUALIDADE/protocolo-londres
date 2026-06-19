@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Protocolo de Londres</title>
+    <link rel="stylesheet" href="shared-styles.css">
+    <link rel="stylesheet" href="extra-styles.css">
+    <style>
+        .welcome-section { margin-bottom: 28px; }
+        .welcome-section h1 { font-size: 26px; color: var(--color-text-primary); margin-bottom: 6px; }
+        .welcome-section p { font-size: 14px; color: var(--color-text-secondary); }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+        @media (max-width: 900px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) { .stats-grid { grid-template-columns: 1fr; } }
+        .actions-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+        @media (max-width: 900px) { .actions-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) { .actions-grid { grid-template-columns: 1fr; } }
+        .action-card { background: white; border-radius: 12px; padding: 26px 20px; text-align: center; box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition); border: 2px solid transparent; }
+        .action-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-primary); }
+        .action-card .icon { font-size: 30px; margin-bottom: 10px; }
+        .action-card h3 { font-size: 15px; color: var(--color-text-primary); margin-bottom: 6px; }
+        .action-card p { font-size: 12px; color: var(--color-text-secondary); line-height: 1.4; }
+        .status-banner { background: var(--color-primary-light); border-radius: 10px; padding: 18px 22px; display: flex; align-items: center; gap: 12px; }
+        .status-banner .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--color-success); flex-shrink: 0; }
+        .status-banner strong { color: var(--color-primary); }
+        .status-banner p { font-size: 13px; color: var(--color-text-secondary); margin-top: 2px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div><div class="stage-title" style="display:flex; align-items:center; gap:10px;">🏥 Protocolo de Londres</div></div>
+            <div class="btn-group" style="align-items:center;">
+                <div style="text-align:right; margin-right:8px;">
+                    <div style="font-weight:700; font-size:13px;" id="dashUsuarioNome">Carregando...</div>
+                    <div style="font-size:11px; opacity:0.85;" id="dashUsuarioCargo"></div>
+                </div>
+                <button class="btn btn-secondary" onclick="logout()">Sair</button>
+            </div>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="welcome-section">
+            <h1>Bem-vindo ao Sistema</h1>
+            <p>Acompanhamento de protocolos de investigação e qualidade em saúde</p>
+        </div>
+        <div class="stats-grid">
+            <div class="dashboard-stat-card" onclick="goToProtocolosList()">
+                <div class="dashboard-stat-title">📄 Protocolos Abertos</div>
+                <div class="dashboard-stat-value" id="statAbertos">0</div>
+                <div class="dashboard-stat-desc">Aguardando investigação formal</div>
+            </div>
+            <div class="dashboard-stat-card accent" onclick="goToProtocolosList()">
+                <div class="dashboard-stat-title">🔍 Em Análise</div>
+                <div class="dashboard-stat-value" id="statEmAnalise">0</div>
+                <div class="dashboard-stat-desc">Investigação em andamento</div>
+            </div>
+            <div class="dashboard-stat-card success" onclick="goToProtocolosList()">
+                <div class="dashboard-stat-title">✅ Encerrados</div>
+                <div class="dashboard-stat-value" id="statEncerrados">0</div>
+                <div class="dashboard-stat-desc">Protocolos finalizados</div>
+            </div>
+            <div class="dashboard-stat-card warning" onclick="goToProtocolosList()">
+                <div class="dashboard-stat-title">⏱️ Tempo Médio</div>
+                <div class="dashboard-stat-value" id="statTempoMedio">-</div>
+                <div class="dashboard-stat-desc" id="statTempoMedioDesc">Sem dados suficientes</div>
+            </div>
+        </div>
+        <h3 style="font-size:15px; margin-bottom:14px; display:flex; align-items:center; gap:8px;">⚡ Ações Rápidas</h3>
+        <div class="actions-grid">
+            <div class="action-card" onclick="criarENavegar()">
+                <div class="icon">➕</div>
+                <h3>Novo Protocolo</h3>
+                <p>Abrir novo processo de investigação de evento adverso</p>
+            </div>
+            <div class="action-card" onclick="goToProtocolosList()">
+                <div class="icon">📊</div>
+                <h3>Ver Protocolos</h3>
+                <p>Acompanhar todos os processos em andamento</p>
+            </div>
+            <div class="action-card" onclick="window.location.href='/protocolos.html?filtro=encerrado'">
+                <div class="icon">📈</div>
+                <h3>Relatórios</h3>
+                <p>Ver protocolos encerrados e seus relatórios finais</p>
+            </div>
+            <div class="action-card" onclick="showAlert('⚙️ Configurações ainda não implementadas nesta versão.', 'info')">
+                <div class="icon">⚙️</div>
+                <h3>Configurações</h3>
+                <p>Personalizar preferências do sistema</p>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- SEÇÃO DE GRÁFICOS ANALÍTICOS -->
+        <!-- ============================================================ -->
+        <div style="margin-top: 28px;">
+            <h3 style="font-size:15px; margin-bottom:16px; display:flex; align-items:center; gap:8px;">📊 Análise Estatística</h3>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
+
+                <!-- Gráfico 1: Pizza - Por tipo de incidente -->
+                <div style="background:white; border-radius:12px; padding:20px; box-shadow:var(--shadow-sm);">
+                    <div style="font-size:13px; font-weight:700; color:var(--color-text-secondary); margin-bottom:12px; text-transform:uppercase; letter-spacing:0.5px;">Por Tipo de Incidente</div>
+                    <canvas id="chartTipo" height="200"></canvas>
+                </div>
+
+                <!-- Gráfico 2: Barras - Por mês -->
+                <div style="background:white; border-radius:12px; padding:20px; box-shadow:var(--shadow-sm);">
+                    <div style="font-size:13px; font-weight:700; color:var(--color-text-secondary); margin-bottom:12px; text-transform:uppercase; letter-spacing:0.5px;">Protocolos por Mês</div>
+                    <canvas id="chartMes" height="200"></canvas>
+                </div>
+
+                <!-- Gráfico 3: Barras horizontais - Tempo médio por status -->
+                <div style="background:white; border-radius:12px; padding:20px; box-shadow:var(--shadow-sm);">
+                    <div style="font-size:13px; font-weight:700; color:var(--color-text-secondary); margin-bottom:12px; text-transform:uppercase; letter-spacing:0.5px;">Status Atual</div>
+                    <canvas id="chartStatus" height="200"></canvas>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- PROTOCOLOS POR UNIDADE -->
+        <!-- ============================================================ -->
+        <div style="margin-top:28px;" id="secaoUnidades">
+            <h3 style="font-size:15px; margin-bottom:16px; display:flex; align-items:center; gap:8px;">🏥 Protocolos em Andamento por Unidade</h3>
+            <div id="unidadesGrid" style="display:flex; flex-direction:column; gap:12px;"></div>
+        </div>
+        <div class="status-banner">
+            <div class="dot"></div>
+            <div>
+                <strong>✓ Sistema Online e Operacional</strong>
+                <p id="systemStatusDesc">Seu ambiente está pronto para uso. Comece criando o primeiro protocolo de investigação de eventos adversos para acompanhar a qualidade e segurança do paciente em sua organização.</p>
+            </div>
+        </div>
+    </div>
+    <script src="shared-components.js"></script>
+<script>
+    if (!exigirAutenticacao()) { /* redireciona para login */ }
+    else {
+        const _u = getUsuarioLogado();
+        if (_u) {
+            document.addEventListener('DOMContentLoaded', () => {
+                const elNome = document.getElementById('dashUsuarioNome');
+                const elCargo = document.getElementById('dashUsuarioCargo');
+                if (elNome) elNome.textContent = _u.nome || _u.email;
+                if (elCargo) elCargo.textContent = _u.cargo || '';
+            });
+        }
+    }
+</script>
+    <script>
+        function criarENavegar() {
+            criarNovoProtocolo();
+            window.location.href = '/novo-protocolo.html';
+        }
+        function renderStats() {
+            const counts = contarProtocolosPorStatus();
+            document.getElementById('statAbertos').textContent = counts.aberto;
+            document.getElementById('statEmAnalise').textContent = counts.em_analise;
+            document.getElementById('statEncerrados').textContent = counts.encerrado;
+            const tempoMedio = calcularTempoMedioDias();
+            if (tempoMedio !== null) {
+                document.getElementById('statTempoMedio').textContent = tempoMedio;
+                document.getElementById('statTempoMedioDesc').textContent = 'dias por investigação';
+            } else {
+                document.getElementById('statTempoMedio').textContent = '-';
+                document.getElementById('statTempoMedioDesc').textContent = 'Sem dados suficientes';
+            }
+            const total = listarProtocolosComNumero().length;
+            if (total > 0) {
+                document.getElementById('systemStatusDesc').textContent = `Você tem ${total} protocolo(s) registrado(s) no sistema. Continue acompanhando ou crie um novo.`;
+            }
+        }
+        renderStats();
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+    (function renderGraficos() {
+        const protocolos = listarProtocolosComNumero();
+
+        // Cores BSL
+        const corTeal    = '#2DACA4';
+        const corTeal2   = '#1A6B7A';
+        const corRed     = '#C0272D';
+        const corYellow  = '#D4A020';
+        const corBlue    = '#1A56A0';
+        const corPurple  = '#6B3FA0';
+        const corGreen   = '#00875A';
+        const corGray    = '#8A8A8A';
+
+        const defaultOptions = {
+            responsive: true,
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 10 } } }
+        };
+
+        // ── Gráfico 1: Pizza por tipo de incidente ──
+        const tipoContagem = {};
+        protocolos.forEach(p => {
+            const tipo = p.tipo_incidente || 'Não informado';
+            tipoContagem[tipo] = (tipoContagem[tipo] || 0) + 1;
+        });
+
+        const tipoLabels = Object.keys(tipoContagem);
+        const tipoCores = [corTeal, corRed, corYellow, corBlue, corPurple, corGreen, corGray, corTeal2];
+
+        if (tipoLabels.length === 0) {
+            // Sem dados: mostra mensagem
+            const ctx1 = document.getElementById('chartTipo');
+            ctx1.style.display = 'none';
+            ctx1.insertAdjacentHTML('afterend', '<div style="text-align:center;color:#98a2b3;font-size:13px;padding:40px 0;">Sem dados ainda</div>');
+        } else {
+            new Chart(document.getElementById('chartTipo'), {
+                type: 'doughnut',
+                data: {
+                    labels: tipoLabels,
+                    datasets: [{ data: Object.values(tipoContagem), backgroundColor: tipoCores.slice(0, tipoLabels.length), borderWidth: 2, borderColor: '#fff' }]
+                },
+                options: { ...defaultOptions, cutout: '60%' }
+            });
+        }
+
+        // ── Gráfico 2: Barras por mês ──
+        const mesesContagem = {};
+        const mesesNomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+        // Últimos 6 meses
+        const hoje = new Date();
+        const ultimos6 = [];
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+            const chave = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+            ultimos6.push({ chave, label: mesesNomes[d.getMonth()] + '/' + String(d.getFullYear()).slice(2) });
+            mesesContagem[chave] = 0;
+        }
+
+        protocolos.forEach(p => {
+            if (p.data_abertura) {
+                const d = new Date(p.data_abertura);
+                const chave = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+                if (mesesContagem[chave] !== undefined) mesesContagem[chave]++;
+            }
+        });
+
+        new Chart(document.getElementById('chartMes'), {
+            type: 'bar',
+            data: {
+                labels: ultimos6.map(m => m.label),
+                datasets: [{
+                    label: 'Protocolos',
+                    data: ultimos6.map(m => mesesContagem[m.chave]),
+                    backgroundColor: corTeal,
+                    borderRadius: 6,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                ...defaultOptions,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } }, grid: { color: '#f0f0f0' } },
+                    x: { ticks: { font: { size: 10 } }, grid: { display: false } }
+                }
+            }
+        });
+
+        // ── Gráfico 3: Barras horizontais por status ──
+        const counts = contarProtocolosPorStatus();
+        new Chart(document.getElementById('chartStatus'), {
+            type: 'bar',
+            data: {
+                labels: ['Abertos', 'Em Análise', 'Encerrados'],
+                datasets: [{
+                    label: 'Quantidade',
+                    data: [counts.aberto || 0, counts.em_analise || 0, counts.encerrado || 0],
+                    backgroundColor: [corBlue, corYellow, corGreen],
+                    borderRadius: 6,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                ...defaultOptions,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } }, grid: { color: '#f0f0f0' } },
+                    y: { ticks: { font: { size: 11 } }, grid: { display: false } }
+                }
+            }
+        });
+    })();
+    </script>
+
+
+    <script>
+    (function renderUnidades() {
+        const protocolos = listarProtocolosComNumero().filter(p =>
+            p.status === 'aberto' || p.status === 'em_analise'
+        );
+
+        const porUnidade = {};
+        protocolos.forEach(p => {
+            const unidade = p.unidade || 'Unidade não informada';
+            if (!porUnidade[unidade]) porUnidade[unidade] = [];
+            porUnidade[unidade].push(p);
+        });
+
+        const grid = document.getElementById('unidadesGrid');
+        if (!grid) return;
+
+        if (Object.keys(porUnidade).length === 0) {
+            grid.innerHTML = '<div style="background:white;border-radius:10px;padding:20px;text-align:center;color:#98a2b3;font-size:13px;box-shadow:var(--shadow-sm);">Nenhum protocolo em andamento no momento.</div>';
+            return;
+        }
+
+        const statusConfig = {
+            aberto:     { label: 'ABERTO',      bg: '#ebf2fb', fg: '#1A56A0' },
+            em_analise: { label: 'EM ANÁLISE',   bg: '#fdf6e3', fg: '#D4A020' },
+            encerrado:  { label: 'ENCERRADO',    bg: '#e3f5ee', fg: '#00875A' },
+            rascunho:   { label: 'RASCUNHO',     bg: '#f3f4f6', fg: '#6B7280' },
+        };
+
+        // Cores por grupo de marca
+        const corUnidade = (unidade) => {
+            if (unidade.includes('Cora') || unidade.includes('Bem Viver') || unidade.includes('Vivace')) return '#1A6B7A';
+            if (unidade.includes('Sainte')) return '#6B3FA0';
+            if (unidade.includes('AssistCare') || unidade.includes('Gaia')) return '#1A56A0';
+            return '#5A5A5A';
+        };
+
+        let html = '';
+        Object.entries(porUnidade)
+            .sort((a, b) => b[1].length - a[1].length) // ordena por quantidade desc
+            .forEach(([unidade, protos]) => {
+                const cor = corUnidade(unidade);
+                const rows = protos.map(p => {
+                    const st = statusConfig[p.status] || statusConfig.rascunho;
+                    const data = p.data_abertura ? new Date(p.data_abertura).toLocaleDateString('pt-BR') : '—';
+                    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #f0f0f0;gap:12px;flex-wrap:wrap;">
+                        <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+                            <div style="font-size:13px;font-weight:700;color:#1a2332;white-space:nowrap;">${p.numero}</div>
+                            <div style="font-size:12px;color:#667085;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.nome_residente || '—'}</div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                            <div style="font-size:11px;color:#98a2b3;">${data}</div>
+                            <span style="display:inline-block;background:${st.bg};color:${st.fg};font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:0.5px;">${st.label}</span>
+                            <button onclick="abrirProtocolo('${p.uuid}')" style="padding:4px 12px;background:${cor};color:white;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">Abrir</button>
+                        </div>
+                    </div>`;
+                }).join('');
+
+                html += `<div style="background:white;border-radius:12px;overflow:hidden;box-shadow:var(--shadow-sm);">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:${cor}10;border-left:4px solid ${cor};">
+                        <div style="font-size:14px;font-weight:700;color:${cor};">🏥 ${unidade}</div>
+                        <span style="background:${cor};color:white;font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;">${protos.length} protocolo${protos.length > 1 ? 's' : ''}</span>
+                    </div>
+                    ${rows}
+                </div>`;
+            });
+
+        grid.innerHTML = html;
+    })();
+
+    function abrirProtocolo(uuid) {
+        setProtocoloAtivo(uuid);
+        window.location.href = '/novo-protocolo.html';
+    }
+    </script>
+
+    <div class="alert" id="alert" style="position:fixed; bottom:20px; right:20px; max-width:360px; z-index:999;"></div>
+</body>
+</html>

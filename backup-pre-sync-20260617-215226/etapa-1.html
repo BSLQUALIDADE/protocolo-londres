@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etapa 1 - Dados do Residente</title>
+    <link rel="stylesheet" href="shared-styles.css">
+    <link rel="stylesheet" href="extra-styles.css">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <div class="stage-info">Etapa 1 de 17</div>
+                <div id="protocoloHeaderTag"></div>
+                <div class="stage-title">📋 Dados do Residente</div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goToList()">← Painel de Etapas</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="progress-bar-card">
+            <div class="progress-info">
+                <span class="progress-label">Progresso da Investigação</span>
+                <span class="progress-percent">Etapa 1 de 17 (6%)</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" style="width:6%"></div></div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-card-header">
+                <h2>👤 Identificação e Dados Clínicos do Residente</h2>
+                <p>Preencha as informações cadastrais e clínicas do residente envolvido no evento adverso.</p>
+            </div>
+
+            <div class="alert" id="alert"></div>
+
+            <form id="stageForm">
+                <!-- IDENTIFICAÇÃO -->
+                <div class="form-section">
+                    <div class="form-section-title">🪪 Identificação</div>
+                    <div class="form-row cols-2">
+                        <div class="form-group">
+                            <label for="nome">Nome Completo <span class="required">*</span></label>
+                            <input type="text" id="nome" placeholder="Nome completo do residente" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_residente">ID do Residente <span class="required">*</span><span class="hint">Número de prontuário/identificação interna</span></label>
+                            <input type="text" id="id_residente" placeholder="Ex: RES-00231" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DADOS DEMOGRÁFICOS -->
+                <div class="form-section">
+                    <div class="form-section-title">📅 Dados Demográficos</div>
+                    <div class="form-row cols-3">
+                        <div class="form-group">
+                            <label for="data_nascimento">Data de Nascimento <span class="required">*</span></label>
+                            <input type="date" id="data_nascimento" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="idade">Idade<span class="hint">Calculada automaticamente</span></label>
+                            <input type="number" id="idade" readonly style="background:var(--color-bg-secondary)">
+                        </div>
+                        <div class="form-group">
+                            <label>Sexo <span class="required">*</span></label>
+                            <div class="radio-group" style="padding-top:10px">
+                                <div class="radio-option">
+                                    <input type="radio" name="sexo" id="sexo_m" value="M" required>
+                                    <label for="sexo_m">Masculino</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" name="sexo" id="sexo_f" value="F">
+                                    <label for="sexo_f">Feminino</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DADOS DE ADMISSÃO -->
+                <div class="form-section">
+                    <div class="form-section-title">🏥 Dados de Admissão na Unidade</div>
+                    <div class="form-row cols-3">
+                        <div class="form-group">
+                            <label for="data_admissao">Data de Admissão</label>
+                            <input type="date" id="data_admissao">
+                        </div>
+                        <div class="form-group">
+                            <label for="unidade">Unidade <span class="required">*</span></label>
+                            <select id="unidade" required>
+                                <option value="">Selecione...</option>
+                                <optgroup label="Cora / ILPI">
+                                    <option value="Cora Jardins">Cora Jardins</option>
+                                    <option value="Cora Tatuapé">Cora Tatuapé</option>
+                                    <option value="Cora Premium">Cora Premium</option>
+                                    <option value="Cora Campo Belo">Cora Campo Belo</option>
+                                    <option value="Cora Morumbi">Cora Morumbi</option>
+                                    <option value="Bem Viver">Bem Viver</option>
+                                    <option value="Vivace Saúde">Vivace Saúde</option>
+                                </optgroup>
+                                <optgroup label="Sainte Marie">
+                                    <option value="Sainte Marie Rio Comprido - RJ">Sainte Marie Rio Comprido - RJ</option>
+                                    <option value="Sainte Marie Morumbi - SP">Sainte Marie Morumbi - SP</option>
+                                    <option value="Sainte Marie Brooklin - SP">Sainte Marie Brooklin - SP</option>
+                                    <option value="Sainte Marie Chácara Sto. Antônio - SP">Sainte Marie Chácara Sto. Antônio - SP</option>
+                                    <option value="Sainte Marie Villa Lobos - SP">Sainte Marie Villa Lobos - SP</option>
+                                </optgroup>
+                                <optgroup label="Outras Marcas">
+                                    <option value="AssistCare (Domiciliar)">AssistCare (Domiciliar)</option>
+                                    <option value="Gaia Cuidadores">Gaia Cuidadores</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="grau_dependencia">Grau de Dependência <span class="required">*</span><span class="hint">Classificação RDC 502/2021</span></label>
+                            <select id="grau_dependencia" required>
+                                <option value="">Selecione...</option>
+                                <option value="D1">Grau I - Independente</option>
+                                <option value="D2">Grau II - Dependência Parcial</option>
+                                <option value="D3">Grau III - Dependência Total</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DADOS CLÍNICOS -->
+                <div class="form-section">
+                    <div class="form-section-title">⚕️ Dados Clínicos</div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="diagnosticosTags">Diagnósticos Principais<span class="hint">Pressione Enter após cada diagnóstico para adicionar</span></label>
+                            <div id="diagnosticosTags"></div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="comorbidadesTags">Comorbidades<span class="hint">Pressione Enter após cada comorbidade para adicionar</span></label>
+                            <div id="comorbidadesTags"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OBSERVAÇÕES -->
+                <div class="form-section">
+                    <div class="form-section-title">📝 Observações Adicionais</div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="observacoes">Observações<span class="hint">Informações clínicas relevantes não cobertas acima</span></label>
+                            <textarea id="observacoes" placeholder="Observações sobre alergias, restrições, dispositivos médicos, etc."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <div>
+                        <button type="submit" class="btn-save">💾 Salvar Etapa</button>
+                        <button type="button" class="btn-back-list" onclick="goToList()">Voltar ao Painel</button>
+                    </div>
+                    <div class="nav-stage-buttons" id="stageNav"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="shared-components.js"></script>
+    <script>
+        const STAGE_NUM = 1;
+        let diagnosticosInput, comorbidadesInput;
+
+        function calcularIdade() {
+            const dataNasc = document.getElementById('data_nascimento').value;
+            if (!dataNasc) { document.getElementById('idade').value = ''; return; }
+            const hoje = new Date();
+            const nasc = new Date(dataNasc);
+            let idade = hoje.getFullYear() - nasc.getFullYear();
+            const m = hoje.getMonth() - nasc.getMonth();
+            if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
+            document.getElementById('idade').value = idade;
+        }
+
+        async function loadData() {
+            const data = await loadStageData(STAGE_NUM);
+            diagnosticosInput = new TagsInput('diagnosticosTags', data?.diagnosticos || []);
+            comorbidadesInput = new TagsInput('comorbidadesTags', data?.comorbidades || []);
+
+            if (data) {
+                setFormValue('nome', data.nome);
+                setFormValue('id_residente', data.id_residente);
+                setFormValue('data_nascimento', data.data_nascimento);
+                setRadioValue('sexo', data.sexo);
+                setFormValue('data_admissao', data.data_admissao);
+                setFormValue('unidade', data.unidade);
+                setFormValue('grau_dependencia', data.grau_dependencia);
+                setFormValue('observacoes', data.observacoes);
+                calcularIdade();
+            }
+        }
+
+        document.getElementById('data_nascimento').addEventListener('change', calcularIdade);
+
+        document.getElementById('stageForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const data = {
+                nome: getFormValue('nome'),
+                id_residente: getFormValue('id_residente'),
+                data_nascimento: getFormValue('data_nascimento'),
+                idade: getFormValue('idade'),
+                sexo: getRadioValue('sexo'),
+                data_admissao: getFormValue('data_admissao'),
+                unidade: getFormValue('unidade'),
+                grau_dependencia: getFormValue('grau_dependencia'),
+                diagnosticos: diagnosticosInput.getTags(),
+                comorbidades: comorbidadesInput.getTags(),
+                observacoes: getFormValue('observacoes')
+            };
+
+            saveStageData(STAGE_NUM, data);
+            showAlert('✓ Etapa 1 salva com sucesso!', 'success');
+        });
+
+        renderStageNav(STAGE_NUM);
+        renderProtocoloHeader('protocoloHeaderTag');
+        loadData();
+    </script>
+</body>
+</html>

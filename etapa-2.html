@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etapa 2 - Informações do Evento</title>
+    <link rel="stylesheet" href="shared-styles.css">
+    <link rel="stylesheet" href="extra-styles.css">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <div class="stage-info">Etapa 2 de 17</div>
+                <div id="protocoloHeaderTag"></div>
+                <div class="stage-title">⚠️ Informações do Evento</div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goToList()">← Painel de Etapas</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="progress-bar-card">
+            <div class="progress-info">
+                <span class="progress-label">Progresso da Investigação</span>
+                <span class="progress-percent">Etapa 2 de 17 (12%)</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" style="width:12%"></div></div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-card-header">
+                <h2>📍 Detalhamento do Evento Adverso</h2>
+                <p>Registre quando, onde e como o evento ocorreu, sua classificação e gravidade.</p>
+            </div>
+
+            <div class="alert" id="alert"></div>
+
+            <form id="stageForm">
+                <!-- QUANDO E ONDE -->
+                <div class="form-section">
+                    <div class="form-section-title">🕐 Quando e Onde Ocorreu</div>
+                    <div class="form-row cols-3">
+                        <div class="form-group">
+                            <label for="data_ocorrencia">Data da Ocorrência <span class="required">*</span></label>
+                            <input type="date" id="data_ocorrencia" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="hora_ocorrencia">Hora da Ocorrência <span class="required">*</span></label>
+                            <input type="time" id="hora_ocorrencia" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="local_ocorrencia">Local da Ocorrência <span class="required">*</span></label>
+                            <input type="text" id="local_ocorrencia" placeholder="Ex: Quarto 204, Banheiro, Refeitório" required>
+                        </div>
+                    </div>
+                    <div class="form-row cols-2">
+                        <div class="form-group">
+                            <label for="data_identificacao">Data de Identificação<span class="hint">Quando o evento foi notado/relatado</span></label>
+                            <input type="date" id="data_identificacao">
+                        </div>
+                        <div class="form-group">
+                            <label for="responsavel_identificacao">Responsável pela Identificação</label>
+                            <input type="text" id="responsavel_identificacao" placeholder="Nome de quem identificou o evento">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CLASSIFICAÇÃO -->
+                <div class="form-section">
+                    <div class="form-section-title">🏷️ Classificação do Evento</div>
+                    <div class="form-row cols-3">
+                        <div class="form-group">
+                            <label for="tipo_incidente">Tipo de Incidente <span class="required">*</span></label>
+                            <select id="tipo_incidente" required>
+                                <option value="">Selecione...</option>
+                                <option value="queda">Queda</option>
+                                <option value="medicamento">Erro de Medicamento</option>
+                                <option value="infeccao">Infecção</option>
+                                <option value="lesao_pressao">Lesão por Pressão</option>
+                                <option value="aspiracao">Aspiração/Engasgo</option>
+                                <option value="fuga">Fuga/Evasão</option>
+                                <option value="agressao">Agressão (física/verbal)</option>
+                                <option value="identificacao">Erro de Identificação</option>
+                                <option value="outro">Outro</option>
+                            </select>
+                            <div id="outroTipoContainer" style="display:none; margin-top:8px;">
+                                <label style="font-size:12px; color:var(--color-text-secondary); display:block; margin-bottom:4px;">Especifique o tipo de incidente</label>
+                                <input type="text" id="outro_tipo_incidente" placeholder="Descreva o tipo de incidente..." style="width:100%; padding:10px 14px; border:2px solid var(--color-border); border-radius:8px; font-size:14px; font-family:inherit;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="classificacao">Classificação <span class="required">*</span></label>
+                            <select id="classificacao" required>
+                                <option value="">Selecione...</option>
+                                <option value="adverso">Evento Adverso</option>
+                                <option value="sentinela">Evento Sentinela</option>
+                                <option value="near_miss">Near Miss (Quase Erro)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="grau_dano">Grau de Dano <span class="required">*</span></label>
+                            <select id="grau_dano" required>
+                                <option value="">Selecione...</option>
+                                <option value="nenhum">Nenhum Dano</option>
+                                <option value="leve">Leve</option>
+                                <option value="moderado">Moderado</option>
+                                <option value="grave">Grave</option>
+                                <option value="morte">Óbito</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DESCRIÇÃO -->
+                <div class="form-section">
+                    <div class="form-section-title">📝 Descrição do Evento</div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="descricao_inicial">Descrição Inicial <span class="required">*</span><span class="hint">Descreva objetivamente o que ocorreu, sem julgamentos ou suposições de causa</span></label>
+                            <textarea id="descricao_inicial" placeholder="Descrição factual do evento..." required style="min-height:130px"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ANEXOS -->
+                <div class="form-section">
+                    <div class="form-section-title">📎 Anexos (Laudos, Fotos, Documentos)</div>
+                    <div class="file-upload-zone" id="uploadZone">
+                        <input type="file" multiple hidden accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                        <div class="icon">📤</div>
+                        <div class="text"><strong>Clique para enviar</strong> ou arraste arquivos aqui<br>PDF, imagens ou documentos</div>
+                    </div>
+                    <div class="file-list" id="fileList"></div>
+                </div>
+
+                <div class="form-actions">
+                    <div>
+                        <button type="submit" class="btn-save">💾 Salvar Etapa</button>
+                        <button type="button" class="btn-back-list" onclick="goToList()">Voltar ao Painel</button>
+                    </div>
+                    <div class="nav-stage-buttons" id="stageNav"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="shared-components.js"></script>
+    <script>
+        const STAGE_NUM = 2;
+        let fileManager;
+
+        // Mostra campo de especificação quando "Outro" é selecionado
+        document.addEventListener('DOMContentLoaded', () => {
+            const selectTipo = document.getElementById('tipo_incidente');
+            const outroContainer = document.getElementById('outroTipoContainer');
+            if (selectTipo && outroContainer) {
+                selectTipo.addEventListener('change', () => {
+                    outroContainer.style.display = selectTipo.value === 'Outro' ? 'block' : 'none';
+                });
+            }
+        });
+
+        async function loadData() {
+            const data = await loadStageData(STAGE_NUM);
+            fileManager = new FileUploadManager('uploadZone', 'fileList', data?.anexos || []);
+
+            if (data) {
+                setFormValue('data_ocorrencia', data.data_ocorrencia);
+                setFormValue('hora_ocorrencia', data.hora_ocorrencia);
+                setFormValue('local_ocorrencia', data.local_ocorrencia);
+                setFormValue('data_identificacao', data.data_identificacao);
+                setFormValue('responsavel_identificacao', data.responsavel_identificacao);
+                setFormValue('tipo_incidente', data.tipo_incidente);
+                setFormValue('classificacao', data.classificacao);
+                setFormValue('grau_dano', data.grau_dano);
+                setFormValue('descricao_inicial', data.descricao_inicial);
+            }
+        }
+
+        document.getElementById('stageForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const data = {
+                data_ocorrencia: getFormValue('data_ocorrencia'),
+                hora_ocorrencia: getFormValue('hora_ocorrencia'),
+                local_ocorrencia: getFormValue('local_ocorrencia'),
+                data_identificacao: getFormValue('data_identificacao'),
+                responsavel_identificacao: getFormValue('responsavel_identificacao'),
+                tipo_incidente: document.getElementById('tipo_incidente')?.value === 'Outro'
+                    ? ('Outro: ' + (getFormValue('outro_tipo_incidente') || 'não especificado'))
+                    : getFormValue('tipo_incidente'),
+                classificacao: getFormValue('classificacao'),
+                grau_dano: getFormValue('grau_dano'),
+                descricao_inicial: getFormValue('descricao_inicial'),
+                anexos: fileManager.getFiles()
+            };
+
+            saveStageData(STAGE_NUM, data);
+            showAlert('✓ Etapa 2 salva com sucesso!', 'success');
+        });
+
+        if (!exigirAutenticacao()) { /* guard-stop */ } else {
+        renderStageNav(STAGE_NUM);
+        renderProtocoloHeader('protocoloHeaderTag');
+        loadData();
+        }
+    </script>
+</body>
+</html>

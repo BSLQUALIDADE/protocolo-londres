@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etapa 5 - Análise por IA</title>
+    <link rel="stylesheet" href="shared-styles.css">
+    <link rel="stylesheet" href="extra-styles.css">
+    <style>
+        .ia-panel {
+            background: linear-gradient(135deg, var(--color-primary-light), var(--color-teal-light));
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .ia-panel .icon { font-size: 40px; margin-bottom: 12px; }
+        .ia-panel h3 { font-size: 18px; color: var(--color-primary); margin-bottom: 8px; }
+        .ia-panel p { font-size: 13px; color: var(--color-text-secondary); max-width: 480px; margin: 0 auto 20px; line-height: 1.6; }
+        .btn-analyze {
+            background: var(--color-primary);
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .btn-analyze:hover { background: var(--color-teal); transform: translateY(-1px); }
+        .btn-analyze:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .suggestion-block {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-left: 4px solid var(--color-teal);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .suggestion-block h4 { font-size: 13px; color: var(--color-teal); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.4px; }
+        .suggestion-block .content { font-size: 14px; color: var(--color-text-primary); line-height: 1.6; }
+        .suggestion-block ul { margin-left: 18px; margin-top: 6px; }
+
+        .review-banner {
+            background: var(--color-warning-light);
+            border-left: 4px solid var(--color-warning);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #B86A00;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 18px; height: 18px;
+            border: 3px solid rgba(255,255,255,0.4);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <div class="stage-info">Etapa 5 de 17</div>
+                <div id="protocoloHeaderTag"></div>
+                <div class="stage-title">🤖 Análise por Inteligência Artificial</div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goToList()">← Painel de Etapas</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="progress-bar-card">
+            <div class="progress-info">
+                <span class="progress-label">Progresso da Investigação</span>
+                <span class="progress-percent">Etapa 5 de 17 (29%)</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" style="width:29%"></div></div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-card-header">
+                <h2>🔍 Análise Automatizada do Caso</h2>
+                <p>A IA analisa os dados já preenchidos (evento, cronologia, entrevistas) e sugere possíveis PPC, fatores contribuintes e causas raiz. <strong>Toda sugestão exige revisão e aprovação manual da equipe de qualidade antes de ser incorporada ao protocolo.</strong></p>
+            </div>
+
+            <div class="alert" id="alert"></div>
+
+            <div class="ia-panel" id="iaPanel">
+                <div class="icon">🤖</div>
+                <h3>Pronto para Analisar</h3>
+                <p>Clique no botão abaixo para que a IA examine os dados das etapas anteriores e gere sugestões estruturadas para apoiar a investigação.</p>
+                <button type="button" class="btn-analyze" id="btnAnalyze">🔬 Analisar Caso com IA</button>
+            </div>
+
+            <div id="resultsContainer" style="display:none;">
+                <div class="review-banner">
+                    ⚠️ <strong>Aguardando revisão.</strong> As sugestões abaixo foram geradas automaticamente e <strong>não foram salvas</strong> nas etapas correspondentes. Revise e copie manualmente o que for pertinente para as Etapas 6 e 7.
+                </div>
+
+                <div class="suggestion-block">
+                    <h4>📋 Resumo Executivo</h4>
+                    <div class="content" id="resumoExecutivo"></div>
+                </div>
+
+                <div class="suggestion-block">
+                    <h4>⚠️ Possíveis PPC (Problemas na Prestação do Cuidado)</h4>
+                    <div class="content" id="possiveisPpc"></div>
+                </div>
+
+                <div class="suggestion-block">
+                    <h4>🔗 Fatores Contribuintes Sugeridos</h4>
+                    <div class="content" id="fatoresContribuintes"></div>
+                </div>
+
+                <div class="suggestion-block">
+                    <h4>🛡️ Barreiras de Segurança Ausentes</h4>
+                    <div class="content" id="barreirasAusentes"></div>
+                </div>
+
+                <div class="suggestion-block">
+                    <h4>🎯 Possíveis Causas Raiz</h4>
+                    <div class="content" id="causasRaiz"></div>
+                </div>
+
+                <div style="text-align:center; margin-top:20px;">
+                    <button type="button" class="btn-nav" id="btnReanalyze">🔄 Analisar Novamente</button>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <div>
+                    <button type="button" class="btn-back-list" onclick="goToList()">Voltar ao Painel</button>
+                </div>
+                <div class="nav-stage-buttons" id="stageNav"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="shared-components.js"></script>
+    <script>
+        const STAGE_NUM = 5;
+
+        async function gerarAnaliseSimulada() {
+            // NOTA: Em produção, isto chama o backend (/api/casos/:id/analisar)
+            // que por sua vez chama a Claude API com os dados reais das etapas 1-4.
+            const evento = await loadStageData(2);
+            const cronologia = await loadStageData(3);
+            const entrevistas = await loadStageData(4);
+
+            return {
+                resumo_executivo: `Evento classificado como "${evento?.classificacao || 'não informado'}" do tipo "${evento?.tipo_incidente || 'não informado'}", ocorrido em ${evento?.data_ocorrencia || 'data não informada'}. A cronologia registra ${cronologia?.cronologia?.length || 0} eventos sequenciais e foram coletados ${entrevistas?.entrevistas?.length || 0} depoimentos.`,
+                possiveis_ppc: [
+                    'Verificar se houve falha na supervisão durante o período relatado',
+                    'Avaliar se protocolos de segurança do paciente foram seguidos integralmente',
+                    'Confirmar se a comunicação entre turnos foi adequada'
+                ],
+                fatores_contribuintes: [
+                    'Fatores de Equipe: possível sobrecarga de trabalho no turno',
+                    'Fatores de Ambiente: verificar condições físicas do local',
+                    'Fatores de Tarefa/Tecnologia: checar adequação de equipamentos utilizados'
+                ],
+                barreiras_ausentes: [
+                    'Sistema de alarme ou monitoramento pode não ter sido acionado a tempo',
+                    'Dupla checagem de procedimento crítico não evidenciada nos relatos'
+                ],
+                causas_raiz: [
+                    'Causa primária sugerida: revisar com base na cronologia detalhada',
+                    'Recomenda-se aprofundar com diagrama de Ishikawa (Etapa 13)'
+                ]
+            };
+        }
+
+        function renderResults(analise) {
+            document.getElementById('resumoExecutivo').textContent = analise.resumo_executivo;
+            document.getElementById('possiveisPpc').innerHTML = '<ul>' + analise.possiveis_ppc.map(i => `<li>${i}</li>`).join('') + '</ul>';
+            document.getElementById('fatoresContribuintes').innerHTML = '<ul>' + analise.fatores_contribuintes.map(i => `<li>${i}</li>`).join('') + '</ul>';
+            document.getElementById('barreirasAusentes').innerHTML = '<ul>' + analise.barreiras_ausentes.map(i => `<li>${i}</li>`).join('') + '</ul>';
+            document.getElementById('causasRaiz').innerHTML = '<ul>' + analise.causas_raiz.map(i => `<li>${i}</li>`).join('') + '</ul>';
+            document.getElementById('resultsContainer').style.display = 'block';
+        }
+
+        function runAnalysis() {
+            const btn = document.getElementById('btnAnalyze');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span> Analisando...';
+
+            setTimeout(async () => {
+                const analise = await gerarAnaliseSimulada();
+                saveStageData(STAGE_NUM, { analise_ia: analise, status: 'aguardando_revisao', data_analise: new Date().toISOString() });
+                renderResults(analise);
+                btn.disabled = false;
+                btn.innerHTML = '🔬 Analisar Caso com IA';
+                showAlert('✓ Análise concluída. Aguardando revisão da equipe de qualidade.', 'info');
+            }, 1500);
+        }
+
+        document.getElementById('btnAnalyze').addEventListener('click', runAnalysis);
+        document.getElementById('btnReanalyze').addEventListener('click', runAnalysis);
+
+        async function loadData() {
+            const data = await loadStageData(STAGE_NUM);
+            if (data?.analise_ia) {
+                renderResults(data.analise_ia);
+            }
+        }
+
+        if (!exigirAutenticacao()) { /* guard-stop */ } else {
+        renderStageNav(STAGE_NUM);
+        renderProtocoloHeader('protocoloHeaderTag');
+        loadData();
+        }
+    </script>
+</body>
+</html>

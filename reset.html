@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reset Storage</title>
+</head>
+<body>
+    <h2>Limpando dados...</h2>
+    <p>Aguarde...</p>
+    <script>
+        localStorage.clear();
+        sessionStorage.clear();
+        console.log("✅ LocalStorage e SessionStorage limpos!");
+        setTimeout(() => {
+            window.location.href = '/dashboard.html';
+        }, 1000);
+    </script>
+</body>
+</html>

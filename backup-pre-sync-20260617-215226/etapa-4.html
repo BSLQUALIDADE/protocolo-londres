@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etapa 4 - Entrevistas</title>
+    <link rel="stylesheet" href="shared-styles.css">
+    <link rel="stylesheet" href="extra-styles.css">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <div class="stage-info">Etapa 4 de 17</div>
+                <div id="protocoloHeaderTag"></div>
+                <div class="stage-title">🎙️ Entrevistas</div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goToList()">← Painel de Etapas</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="progress-bar-card">
+            <div class="progress-info">
+                <span class="progress-label">Progresso da Investigação</span>
+                <span class="progress-percent">Etapa 4 de 17 (24%)</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" style="width:24%"></div></div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-card-header">
+                <h2>👥 Depoimentos de Envolvidos e Testemunhas</h2>
+                <p>Registre os relatos de profissionais, residente e/ou familiares envolvidos ou que testemunharam o evento.</p>
+            </div>
+
+            <div class="alert" id="alert"></div>
+
+            <form id="stageForm">
+                <div class="form-section">
+                    <div id="entrevistasContainer"></div>
+                    <button type="button" class="btn-add-row" id="btnAddEntrevista">+ Adicionar Entrevista</button>
+                </div>
+
+                <div class="form-actions">
+                    <div>
+                        <button type="submit" class="btn-save">💾 Salvar Etapa</button>
+                        <button type="button" class="btn-back-list" onclick="goToList()">Voltar ao Painel</button>
+                    </div>
+                    <div class="nav-stage-buttons" id="stageNav"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="shared-components.js"></script>
+    <style>
+        .entrevista-card {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 16px;
+            position: relative;
+        }
+        .entrevista-card .btn-remove-entrevista {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+        }
+        .entrevista-number {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--color-primary);
+            text-transform: uppercase;
+            margin-bottom: 14px;
+            letter-spacing: 0.5px;
+        }
+    </style>
+    <script>
+        const STAGE_NUM = 4;
+        let entrevistas = [];
+
+        function renderEntrevistas() {
+            const container = document.getElementById('entrevistasContainer');
+            if (entrevistas.length === 0) {
+                container.innerHTML = '<div class="empty-state">Nenhuma entrevista registrada. Clique em "+ Adicionar Entrevista".</div>';
+                return;
+            }
+
+            let html = '';
+            entrevistas.forEach((ent, idx) => {
+                html += `
+                <div class="entrevista-card">
+                    <button type="button" class="btn-icon delete btn-remove-entrevista" data-idx="${idx}" title="Remover entrevista">🗑️</button>
+                    <div class="entrevista-number">Entrevista ${idx + 1}</div>
+                    <div class="form-row cols-2">
+                        <div class="form-group">
+                            <label>Nome do Entrevistado</label>
+                            <input type="text" data-idx="${idx}" data-field="nome_entrevistado" value="${escapeHtml(ent.nome_entrevistado)}" placeholder="Nome completo">
+                        </div>
+                        <div class="form-group">
+                            <label>Cargo / Função</label>
+                            <input type="text" data-idx="${idx}" data-field="cargo" value="${escapeHtml(ent.cargo)}" placeholder="Ex: Técnica de Enfermagem">
+                        </div>
+                    </div>
+                    <div class="form-row cols-2">
+                        <div class="form-group">
+                            <label>Data da Entrevista</label>
+                            <input type="date" data-idx="${idx}" data-field="data_entrevista" value="${escapeHtml(ent.data_entrevista)}">
+                        </div>
+                        <div class="form-group">
+                            <label>Horário</label>
+                            <input type="time" data-idx="${idx}" data-field="horario" value="${escapeHtml(ent.horario)}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label>Relato Completo</label>
+                            <textarea data-idx="${idx}" data-field="relato_completo" placeholder="Transcreva ou resuma o relato do entrevistado..." style="min-height:100px">${escapeHtml(ent.relato_completo)}</textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label>Observações</label>
+                            <textarea data-idx="${idx}" data-field="observacoes" placeholder="Observações adicionais sobre a entrevista">${escapeHtml(ent.observacoes)}</textarea>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+
+            container.querySelectorAll('input, textarea').forEach(el => {
+                el.addEventListener('input', (e) => {
+                    const idx = parseInt(e.target.dataset.idx);
+                    const field = e.target.dataset.field;
+                    entrevistas[idx][field] = e.target.value;
+                });
+            });
+
+            container.querySelectorAll('.btn-remove-entrevista').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = parseInt(e.target.dataset.idx);
+                    entrevistas.splice(idx, 1);
+                    renderEntrevistas();
+                });
+            });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        async function loadData() {
+            const data = await loadStageData(STAGE_NUM);
+            entrevistas = data?.entrevistas || [];
+            renderEntrevistas();
+        }
+
+        document.getElementById('btnAddEntrevista').addEventListener('click', () => {
+            entrevistas.push({
+                nome_entrevistado: '', cargo: '', data_entrevista: '',
+                horario: '', relato_completo: '', observacoes: ''
+            });
+            renderEntrevistas();
+        });
+
+        document.getElementById('stageForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveStageData(STAGE_NUM, { entrevistas });
+            showAlert('✓ Etapa 4 salva com sucesso!', 'success');
+        });
+
+        renderStageNav(STAGE_NUM);
+        renderProtocoloHeader('protocoloHeaderTag');
+        loadData();
+    </script>
+</body>
+</html>

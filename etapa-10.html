@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etapa 10 - Jurídico</title>
+    <link rel="stylesheet" href="shared-styles.css">
+    <link rel="stylesheet" href="extra-styles.css">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <div class="stage-info">Etapa 10 de 17</div>
+                <div id="protocoloHeaderTag"></div>
+                <div class="stage-title">⚖️ Considerações Jurídicas</div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goToList()">← Painel de Etapas</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="progress-bar-card">
+            <div class="progress-info">
+                <span class="progress-label">Progresso da Investigação</span>
+                <span class="progress-percent">Etapa 10 de 17 (59%)</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" style="width:59%"></div></div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-card-header">
+                <h2>📜 Análise Legal do Caso</h2>
+                <p>Avalie se o evento requer análise jurídica formal e registre o parecer obtido, quando aplicável.</p>
+            </div>
+
+            <div class="alert" id="alert"></div>
+
+            <form id="stageForm">
+                <div class="form-section">
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label>Este caso necessita avaliação jurídica? <span class="required">*</span></label>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" name="necessita_avaliacao" id="jur_sim" value="true" required>
+                                    <label for="jur_sim">Sim</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" name="necessita_avaliacao" id="jur_nao" value="false">
+                                    <label for="jur_nao">Não</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section" id="detalhesSection">
+                    <div class="form-section-title">📝 Detalhamento</div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="descricao">Descrição do Risco/Questão Jurídica</label>
+                            <textarea id="descricao" placeholder="Descreva a natureza da questão jurídica identificada"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row cols-2">
+                        <div class="form-group">
+                            <label for="data_parecer">Data do Parecer</label>
+                            <input type="date" id="data_parecer">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="parecer_juridico">Parecer Jurídico<span class="hint">Conclusões e recomendações do setor jurídico</span></label>
+                            <textarea id="parecer_juridico" placeholder="Registre o parecer obtido" style="min-height:120px"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="observacoes">Observações</label>
+                            <textarea id="observacoes" placeholder="Informações complementares"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <div>
+                        <button type="submit" class="btn-save">💾 Salvar Etapa</button>
+                        <button type="button" class="btn-back-list" onclick="goToList()">Voltar ao Painel</button>
+                    </div>
+                    <div class="nav-stage-buttons" id="stageNav"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="shared-components.js"></script>
+    <script>
+        const STAGE_NUM = 10;
+
+        function toggleDetalhes() {
+            const necessita = getRadioValue('necessita_avaliacao');
+            document.getElementById('detalhesSection').style.display = (necessita === 'true') ? 'block' : 'none';
+        }
+
+        document.querySelectorAll('input[name="necessita_avaliacao"]').forEach(el => {
+            el.addEventListener('change', toggleDetalhes);
+        });
+
+        async function loadData() {
+            const data = await loadStageData(STAGE_NUM);
+            if (data) {
+                setRadioValue('necessita_avaliacao', String(data.necessita_avaliacao));
+                setFormValue('descricao', data.descricao);
+                setFormValue('data_parecer', data.data_parecer);
+                setFormValue('parecer_juridico', data.parecer_juridico);
+                setFormValue('observacoes', data.observacoes);
+            }
+            toggleDetalhes();
+        }
+
+        document.getElementById('stageForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const data = {
+                necessita_avaliacao: getRadioValue('necessita_avaliacao') === 'true',
+                descricao: getFormValue('descricao'),
+                data_parecer: getFormValue('data_parecer'),
+                parecer_juridico: getFormValue('parecer_juridico'),
+                observacoes: getFormValue('observacoes')
+            };
+            saveStageData(STAGE_NUM, data);
+            showAlert('✓ Etapa 10 salva com sucesso!', 'success');
+        });
+
+        if (!exigirAutenticacao()) { /* guard-stop */ } else {
+        renderStageNav(STAGE_NUM);
+        renderProtocoloHeader('protocoloHeaderTag');
+        loadData();
+        }
+    </script>
+</body>
+</html>

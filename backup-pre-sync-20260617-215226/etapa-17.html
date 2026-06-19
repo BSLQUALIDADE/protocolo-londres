@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etapa 17 - Relatório Final</title>
+    <link rel="stylesheet" href="shared-styles.css">
+    <link rel="stylesheet" href="extra-styles.css">
+    <style>
+        .checklist-final { display: flex; flex-direction: column; gap: 8px; }
+        .checklist-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: 8px; background: var(--color-bg-secondary); font-size: 13px; }
+        .checklist-item.done { background: var(--color-success-light); }
+        .checklist-item.pending { background: var(--color-warning-light); }
+        .status-icon { font-size: 16px; margin-right: 8px; }
+        .btn-generate-pdf { background: var(--color-primary); color: white; padding: 16px 36px; border: none; border-radius: 10px; font-weight: 700; font-size: 15px; cursor: pointer; transition: var(--transition); box-shadow: var(--shadow-md); }
+        .btn-generate-pdf:hover { background: var(--color-teal); transform: translateY(-1px); }
+        .btn-generate-pdf:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .report-document {
+            background: white; border: 1px solid var(--color-border); border-radius: 10px;
+            padding: 32px; margin-top: 16px; font-size: 14px; line-height: 1.7; color: var(--color-text-primary);
+        }
+        .report-document h3 {
+            font-size: 15px; color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.4px;
+            margin: 24px 0 10px; padding-bottom: 8px; border-bottom: 2px solid var(--color-border);
+        }
+        .report-document h3:first-child { margin-top: 0; }
+        .report-document p { margin-bottom: 10px; }
+        .report-document .report-empty { color: var(--color-text-tertiary); font-style: italic; }
+        .report-document strong { color: var(--color-text-primary); }
+        .report-document ul { margin: 8px 0 8px 20px; }
+        .report-document li { margin-bottom: 4px; }
+
+        .report-title-block { text-align: center; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 3px solid var(--color-primary); }
+        .report-title-block h2 { font-size: 20px; color: var(--color-primary); margin-bottom: 6px; }
+        .report-title-block .report-numero { font-size: 14px; color: var(--color-text-secondary); font-weight: 600; }
+
+        .editable-hint {
+            background: var(--color-primary-light); color: var(--color-primary); padding: 10px 14px;
+            border-radius: 8px; font-size: 12px; margin-bottom: 14px;
+        }
+
+        #reportTextarea {
+            width: 100%; min-height: 600px; font-family: 'Segoe UI', sans-serif; font-size: 13px;
+            line-height: 1.7; padding: 24px; border: 2px solid var(--color-border); border-radius: 10px;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <div class="stage-info" id="protocoloHeader">Etapa 17 de 17</div>
+                <div class="stage-title">📑 Relatório Final</div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goToList()">← Painel de Etapas</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="progress-bar-card">
+            <div class="progress-info">
+                <span class="progress-label">Progresso da Investigação</span>
+                <span class="progress-percent">Etapa 17 de 17 (100%)</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" style="width:100%"></div></div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-card-header">
+                <h2>📊 Revisão e Geração do Relatório</h2>
+                <p>Confira o status de cada etapa, gere o rascunho do relatório narrativo consolidado e edite o texto antes de finalizar.</p>
+            </div>
+
+            <div class="alert" id="alert"></div>
+
+            <div class="form-section">
+                <div class="form-section-title">✅ Checklist de Conclusão</div>
+                <div class="checklist-final" id="checklistFinal"></div>
+            </div>
+
+            <div class="form-section" style="text-align:center; padding: 20px 0;">
+                <button type="button" class="btn-generate-pdf" id="btnGenerate">📄 Gerar Rascunho do Relatório Final</button>
+                <p style="font-size:12px; color:var(--color-text-tertiary); margin-top:12px;">O sistema vai montar um texto narrativo a partir de todas as 17 etapas. Você pode editar livremente antes de finalizar.</p>
+            </div>
+
+            <div id="reportEditor" style="display:none;">
+                <div class="form-section-title">✏️ Editar Relatório (Rascunho)</div>
+                <div class="editable-hint">💡 Este é um rascunho gerado automaticamente. Revise, corrija e complemente as informações antes de finalizar o protocolo.</div>
+                <textarea id="reportTextarea"></textarea>
+
+                <div class="form-actions">
+                    <div>
+                        <button type="button" class="btn-save" id="btnSaveDraft">💾 Salvar Rascunho</button>
+                        <button type="button" class="btn-nav" id="btnDownloadPdf">📥 Baixar PDF</button>
+                        <button type="button" class="btn-back-list" onclick="goToList()">Voltar ao Painel</button>
+                    </div>
+                    <button type="button" class="btn-generate-pdf" id="btnFinalize">✅ Finalizar e Encerrar Protocolo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="shared-components.js"></script>
+    <script>
+        const STAGE_NUM = 17;
+
+        function checkStageStatus(num) { return isStageComplete(num); }
+
+        function renderChecklist() {
+            const container = document.getElementById('checklistFinal');
+            let html = ''; let totalDone = 0;
+            for (let i = 1; i <= 16; i++) {
+                const done = checkStageStatus(i);
+                if (done) totalDone++;
+                html += `<div class="checklist-item ${done ? 'done' : 'pending'}"><span><span class="status-icon">${done ? '✅' : '⏳'}</span>Etapa ${i}: ${STAGE_NAMES[i]}</span><button type="button" class="btn-nav" onclick="goToStage(${i})" style="padding:6px 14px; font-size:12px;">Abrir</button></div>`;
+            }
+            container.innerHTML = html;
+            return totalDone;
+        }
+
+        // ============================================================
+        // GERADOR DE TEXTO NARRATIVO — puxa as 17 etapas e monta o laudo
+        // ============================================================
+        function fmtData(iso) {
+            if (!iso) return null;
+            const [ano, mes, dia] = iso.split('-');
+            return `${dia}/${mes}/${ano}`;
+        }
+
+        function fmtDataHora(dataIso, horaStr) {
+            const d = fmtData(dataIso);
+            if (!d) return null;
+            return horaStr ? `${d}, por volta das ${horaStr}` : d;
+        }
+
+        const TIPO_INCIDENTE_LABELS = {
+            queda: 'queda', medicamento: 'erro de medicação', infeccao: 'infecção',
+            lesao_pressao: 'lesão por pressão', aspiracao: 'aspiração/engasgo', fuga: 'fuga/evasão',
+            agressao: 'agressão', identificacao: 'erro de identificação', outro: 'evento adverso'
+        };
+
+        const GRAU_DANO_LABELS = {
+            nenhum: 'sem dano aparente', leve: 'dano leve', moderado: 'dano moderado',
+            grave: 'dano grave', morte: 'óbito'
+        };
+
+        const CLASSIFICACAO_LABELS = {
+            adverso: 'evento adverso', sentinela: 'evento sentinela', near_miss: 'near miss (quase erro)'
+        };
+
+        const CATEGORIA_FATOR_LABELS = {
+            paciente: 'Paciente', tarefa_tecnologia: 'Tarefa/Tecnologia', individuo: 'Indivíduo',
+            equipe: 'Equipe', ambiente: 'Ambiente', organizacao: 'Organização', contexto: 'Contexto Institucional'
+        };
+
+        async function gerarTextoRelatorio() {
+            const e1 = await loadStageData(1);   // residente
+            const e2 = await loadStageData(2);   // evento
+            const e3 = await loadStageData(3);   // cronologia
+            const e4 = await loadStageData(4);   // entrevistas
+            const e6 = await loadStageData(6);   // ppc
+            const e7 = await loadStageData(7);   // fatores
+            const e8 = await loadStageData(8);   // segunda vitima
+            const e9 = await loadStageData(9);   // disclosure
+            const e10 = await loadStageData(10); // juridico
+            const e11 = await loadStageData(11); // gut
+            const e12 = await loadStageData(12); // esforco impacto
+            const e13 = await loadStageData(13); // ishikawa
+            const e14 = await loadStageData(14); // 5w2h
+            const e15 = await loadStageData(15); // diario
+            const e16 = await loadStageData(16); // monitoramento
+
+            const meta = getProtocoloMetaAtivo();
+            const numero = meta?.numero || '(número pendente)';
+
+            let texto = '';
+
+            texto += `RELATÓRIO DE INVESTIGAÇÃO DE EVENTO ADVERSO — PROTOCOLO DE LONDRES\n`;
+            texto += `Protocolo nº ${numero}\n`;
+            texto += `Data de geração: ${new Date().toLocaleDateString('pt-BR')}\n`;
+            texto += `\n${'='.repeat(70)}\n\n`;
+
+            // ===== 1. IDENTIFICAÇÃO DO RESIDENTE =====
+            texto += `1. IDENTIFICAÇÃO DO RESIDENTE\n\n`;
+            if (e1) {
+                texto += `O residente ${e1.nome || '(nome não informado)'}`;
+                if (e1.id_residente) texto += `, identificado sob o registro ${e1.id_residente}`;
+                if (e1.idade) texto += `, com ${e1.idade} anos de idade`;
+                if (e1.sexo) texto += ` (sexo ${e1.sexo === 'M' ? 'masculino' : 'feminino'})`;
+                texto += `, é residente da unidade ${e1.unidade || '(unidade não informada)'}`;
+                if (e1.grau_dependencia) {
+                    const grauLabels = { D1: 'Grau I (independente)', D2: 'Grau II (dependência parcial)', D3: 'Grau III (dependência total)' };
+                    texto += `, classificado com grau de dependência ${grauLabels[e1.grau_dependencia] || e1.grau_dependencia}`;
+                }
+                if (e1.data_admissao) texto += `, admitido na unidade em ${fmtData(e1.data_admissao)}`;
+                texto += `.\n\n`;
+
+                if (e1.diagnosticos && e1.diagnosticos.length > 0) {
+                    texto += `Diagnósticos principais: ${e1.diagnosticos.join(', ')}.\n`;
+                }
+                if (e1.comorbidades && e1.comorbidades.length > 0) {
+                    texto += `Comorbidades associadas: ${e1.comorbidades.join(', ')}.\n`;
+                }
+                if (e1.observacoes) {
+                    texto += `Observações clínicas relevantes: ${e1.observacoes}\n`;
+                }
+            } else {
+                texto += `[Dados do residente não preenchidos — completar Etapa 1]\n`;
+            }
+            texto += `\n`;
+
+            // ===== 2. DESCRIÇÃO DO EVENTO =====
+            texto += `2. DESCRIÇÃO DO EVENTO\n\n`;
+            if (e2) {
+                const tipoLabel = TIPO_INCIDENTE_LABELS[e2.tipo_incidente] || e2.tipo_incidente || 'evento';
+                const classifLabel = CLASSIFICACAO_LABELS[e2.classificacao] || e2.classificacao;
+                const grauLabel = GRAU_DANO_LABELS[e2.grau_dano] || e2.grau_dano;
+
+                texto += `Em ${fmtDataHora(e2.data_ocorrencia, e2.hora_ocorrencia) || '(data não informada)'}, ocorreu um evento do tipo ${tipoLabel}`;
+                if (e2.local_ocorrencia) texto += `, no seguinte local: ${e2.local_ocorrencia}`;
+                texto += `. O evento foi classificado como ${classifLabel || '(classificação não informada)'}, com grau de dano avaliado como ${grauLabel || '(não informado)'}.\n\n`;
+
+                if (e2.data_identificacao || e2.responsavel_identificacao) {
+                    texto += `A identificação do evento ocorreu`;
+                    if (e2.data_identificacao) texto += ` em ${fmtData(e2.data_identificacao)}`;
+                    if (e2.responsavel_identificacao) texto += `, sendo reportada por ${e2.responsavel_identificacao}`;
+                    texto += `.\n\n`;
+                }
+
+                if (e2.descricao_inicial) {
+                    texto += `Descrição inicial do ocorrido: ${e2.descricao_inicial}\n\n`;
+                }
+
+                if (e2.anexos && e2.anexos.length > 0) {
+                    texto += `Documentação anexada como evidência: ${e2.anexos.map(a => a.name).join(', ')}.\n`;
+                }
+            } else {
+                texto += `[Informações do evento não preenchidas — completar Etapa 2]\n`;
+            }
+            texto += `\n`;
+
+            // ===== 3. CRONOLOGIA DOS FATOS =====
+            texto += `3. CRONOLOGIA DOS FATOS\n\n`;
+            if (e3 && e3.cronologia && e3.cronologia.length > 0) {
+                const ordenados = [...e3.cronologia].sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+                ordenados.forEach((item) => {
+                    const dataHora = fmtDataHora(item.data, item.hora);
+                    texto += `• ${dataHora ? dataHora + ' — ' : ''}${item.descricao || '(sem descrição)'}`;
+                    if (item.responsavel) texto += ` (registrado por: ${item.responsavel})`;
+                    texto += `\n`;
+                });
+            } else {
+                texto += `[Cronologia não preenchida — completar Etapa 3]\n`;
+            }
+            texto += `\n`;
+
+            // ===== 4. RELATOS E ENTREVISTAS =====
+            texto += `4. RELATOS E ENTREVISTAS\n\n`;
+            if (e4 && e4.entrevistas && e4.entrevistas.length > 0) {
+                e4.entrevistas.forEach((ent, idx) => {
+                    texto += `Depoimento ${idx + 1} — ${ent.nome_entrevistado || '(nome não informado)'}`;
+                    if (ent.cargo) texto += ` (${ent.cargo})`;
+                    if (ent.data_entrevista) texto += `, entrevistado em ${fmtData(ent.data_entrevista)}`;
+                    texto += `:\n`;
+                    texto += `"${ent.relato_completo || '(relato não registrado)'}"\n`;
+                    if (ent.observacoes) texto += `Observações: ${ent.observacoes}\n`;
+                    texto += `\n`;
+                });
+            } else {
+                texto += `[Nenhuma entrevista registrada — completar Etapa 4]\n\n`;
+            }
+
+            // ===== 5. PROBLEMAS NA PRESTAÇÃO DO CUIDADO (PPC) =====
+            texto += `5. PROBLEMAS NA PRESTAÇÃO DO CUIDADO (PPC)\n\n`;
+            if (e6 && e6.ppc && e6.ppc.length > 0) {
+                e6.ppc.forEach((item, idx) => {
+                    texto += `${idx + 1}. ${item.descricao || '(sem descrição)'}`;
+                    if (item.evidencia) texto += ` — Evidência: ${item.evidencia}`;
+                    texto += `\n`;
+                });
+            } else {
+                texto += `[Nenhum PPC identificado — completar Etapa 6]\n`;
+            }
+            texto += `\n`;
+
+            // ===== 6. FATORES CONTRIBUINTES =====
+            texto += `6. FATORES CONTRIBUINTES\n\n`;
+            if (e7 && e7.fatores_contribuintes && e7.fatores_contribuintes.length > 0) {
+                e7.fatores_contribuintes.forEach((item, idx) => {
+                    const catLabel = CATEGORIA_FATOR_LABELS[item.categoria] || item.categoria;
+                    texto += `${idx + 1}. [${catLabel || 'Categoria não informada'}] ${item.descricao || '(sem descrição)'}`;
+                    if (item.evidencia) texto += ` — Evidência: ${item.evidencia}`;
+                    texto += `\n`;
+                });
+            } else {
+                texto += `[Nenhum fator contribuinte identificado — completar Etapa 7]\n`;
+            }
+            texto += `\n`;
+
+            // ===== 7. SUPORTE E COMUNICAÇÃO =====
+            texto += `7. SUPORTE AOS PROFISSIONAIS E COMUNICAÇÃO COM A FAMÍLIA\n\n`;
+            if (e8) {
+                if (e8.houve_segunda_vitima) {
+                    texto += `Foi identificada situação de segunda vítima entre os profissionais envolvidos. ${e8.descricao || ''} Conduta adotada: ${e8.conduta_adotada || '(não registrada)'}.\n\n`;
+                } else {
+                    texto += `Não foi identificada situação de segunda vítima entre os profissionais envolvidos.\n\n`;
+                }
+            }
+            if (e9) {
+                if (e9.realizado) {
+                    texto += `Foi realizado disclosure (comunicação transparente) com o residente e/ou familiares`;
+                    if (e9.data_disclosure) texto += ` em ${fmtData(e9.data_disclosure)}`;
+                    if (e9.participantes && e9.participantes.length > 0) texto += `, com a participação de: ${e9.participantes.join(', ')}`;
+                    texto += `. ${e9.descricao || ''}\n\n`;
+                } else {
+                    texto += `Não foi registrada a realização de disclosure formal com a família neste caso.\n\n`;
+                }
+            }
+            if (e10) {
+                if (e10.necessita_avaliacao) {
+                    texto += `O caso foi avaliado juridicamente. ${e10.descricao || ''} Parecer: ${e10.parecer_juridico || '(parecer pendente)'}`;
+                    if (e10.data_parecer) texto += `, emitido em ${fmtData(e10.data_parecer)}`;
+                    texto += `.\n`;
+                } else {
+                    texto += `Não foi identificada necessidade de avaliação jurídica formal para este caso.\n`;
+                }
+            }
+            texto += `\n`;
+
+            // ===== 8. PRIORIZAÇÃO E ANÁLISE DE CAUSA =====
+            texto += `8. PRIORIZAÇÃO E ANÁLISE DE CAUSA\n\n`;
+            if (e11) {
+                texto += `Matriz GUT: Gravidade ${e11.gravidade}, Urgência ${e11.urgencia}, Tendência ${e11.tendencia} — resultado ${e11.resultado_gut} (classificação ${e11.classificacao || '-'}).\n`;
+            } else {
+                texto += `[Matriz GUT não preenchida — completar Etapa 11]\n`;
+            }
+            if (e12) {
+                texto += `Matriz Esforço × Impacto: esforço ${e12.esforco || '-'}, impacto ${e12.impacto || '-'} — quadrante: ${e12.quadrante || '-'}.\n`;
+            } else {
+                texto += `[Matriz Esforço × Impacto não preenchida — completar Etapa 12]\n`;
+            }
+            if (e13 && (e13.categoria || e13.ramo_1)) {
+                texto += `\nAnálise de Ishikawa (causa e efeito) sobre "${e13.categoria || '(efeito não definido)'}":\n`;
+                const ramos = [
+                    { label: 'Método', val: e13.ramo_1 }, { label: 'Mão de Obra', val: e13.ramo_2 },
+                    { label: 'Material', val: e13.ramo_3 }, { label: 'Máquina', val: e13.ramo_4 },
+                    { label: 'Medida', val: e13.ramo_5 }, { label: 'Meio Ambiente', val: e13.ramo_6 }
+                ];
+                ramos.forEach(r => { if (r.val) texto += `  • ${r.label}: ${r.val}\n`; });
+            }
+            texto += `\n`;
+
+            // ===== 9. PLANO DE AÇÃO =====
+            texto += `9. PLANO DE AÇÃO CORRETIVA (5W2H)\n\n`;
+            if (e14 && e14.acoes_5w2h && e14.acoes_5w2h.length > 0) {
+                e14.acoes_5w2h.forEach((acao, idx) => {
+                    texto += `Ação ${idx + 1}: ${acao.o_que || '(não definida)'}\n`;
+                    if (acao.por_que) texto += `  Justificativa: ${acao.por_que}\n`;
+                    if (acao.quem) texto += `  Responsável: ${acao.quem}`;
+                    if (acao.quando) texto += ` | Prazo: ${fmtData(acao.quando)}`;
+                    texto += `\n`;
+                    if (acao.como) texto += `  Metodologia: ${acao.como}\n`;
+                    texto += `  Status: ${acao.status || 'aberta'}\n\n`;
+                });
+            } else {
+                texto += `[Nenhuma ação corretiva cadastrada — completar Etapa 14]\n\n`;
+            }
+
+            // ===== 10. MONITORAMENTO =====
+            texto += `10. MONITORAMENTO DAS AÇÕES\n\n`;
+            if (e16 && e16.monitoramento && e16.monitoramento.length > 0) {
+                e16.monitoramento.forEach((mon, idx) => {
+                    texto += `Ação ${idx + 1}: status "${mon.status}", ${mon.percentual_conclusao}% concluído, responsável: ${mon.responsavel || '-'}.\n`;
+                });
+            } else {
+                texto += `[Monitoramento ainda não iniciado — completar Etapa 16]\n`;
+            }
+            texto += `\n`;
+
+            // ===== 11. REGISTRO DE REUNIÕES =====
+            if (e15 && e15.diario_bordo && e15.diario_bordo.length > 0) {
+                texto += `11. REGISTRO DE REUNIÕES E DECISÕES (DIÁRIO DE BORDO)\n\n`;
+                e15.diario_bordo.forEach((entry) => {
+                    texto += `${fmtData(entry.data) || '(data não informada)'} — ${entry.assunto || '(assunto não informado)'}\n`;
+                    if (entry.decisoes) texto += `  Decisões: ${entry.decisoes}\n`;
+                    if (entry.proximos_passos) texto += `  Próximos passos: ${entry.proximos_passos}\n`;
+                    texto += `\n`;
+                });
+            }
+
+            // ===== CONCLUSÃO =====
+            texto += `${'='.repeat(70)}\n\n`;
+            texto += `CONCLUSÃO E RECOMENDAÇÕES FINAIS\n\n`;
+            texto += `[Escreva aqui a síntese final da investigação: causas raiz confirmadas, responsabilidades apuradas, eficácia esperada das ações corretivas e recomendações para prevenção de recorrência.]\n`;
+
+            return texto;
+        }
+
+        async function loadData() {
+            const data = await loadStageData(STAGE_NUM);
+            renderChecklist();
+            if (data && data.texto_relatorio) {
+                document.getElementById('reportTextarea').value = data.texto_relatorio;
+                document.getElementById('reportEditor').style.display = 'block';
+            }
+            const meta = getProtocoloMetaAtivo();
+            if (meta) {
+                document.getElementById('protocoloHeader').textContent = `Protocolo: ${meta.numero || '(pendente)'} · Etapa 17 de 17`;
+            }
+        }
+
+        document.getElementById('btnGenerate').addEventListener('click', async () => {
+            const totalDone = renderChecklist();
+            if (totalDone < 16) {
+                showAlert(`⚠️ Atenção: ${16 - totalDone} etapa(s) ainda não foram preenchidas. O rascunho será gerado com as informações disponíveis — complete as demais etapas para um relatório mais completo.`, 'info');
+            }
+
+            const btn = document.getElementById('btnGenerate');
+            const textoOriginalBtn = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '⏳ Gerando rascunho...';
+
+            const texto = await gerarTextoRelatorio();
+
+            document.getElementById('reportTextarea').value = texto;
+            document.getElementById('reportEditor').style.display = 'block';
+            saveStageData(STAGE_NUM, { texto_relatorio: texto, relatorio_gerado: false });
+            document.getElementById('reportEditor').scrollIntoView({ behavior: 'smooth' });
+
+            btn.disabled = false;
+            btn.textContent = textoOriginalBtn;
+        });
+
+        document.getElementById('btnSaveDraft').addEventListener('click', () => {
+            const texto = document.getElementById('reportTextarea').value;
+            saveStageData(STAGE_NUM, { texto_relatorio: texto, relatorio_gerado: false });
+            showAlert('✓ Rascunho salvo com sucesso!', 'success');
+        });
+
+        document.getElementById('btnDownloadPdf').addEventListener('click', async () => {
+            const uuid = getProtocoloAtivo();
+            if (!uuid) {
+                showAlert('⚠️ Nenhum protocolo ativo.', 'error');
+                return;
+            }
+
+            // Garante que o texto mais recente do textarea está salvo (local + API)
+            // antes de pedir o PDF, já que o backend lê o texto da etapa 17 do banco.
+            const texto = document.getElementById('reportTextarea').value;
+            saveStageData(STAGE_NUM, { texto_relatorio: texto, relatorio_gerado: false });
+
+            const btn = document.getElementById('btnDownloadPdf');
+            const textoOriginal = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '⏳ Gerando PDF...';
+
+            try {
+                // Aguarda um instante para a sincronização em background (sincronizarEtapaComAPI) completar
+                await new Promise(r => setTimeout(r, 600));
+
+                const response = await fetch(`/api/protocolos/${uuid}/pdf`);
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.erro || 'Erro ao gerar PDF');
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const meta = getProtocoloMetaAtivo();
+                a.download = `Protocolo_${(meta?.numero || 'rascunho').replace(/\./g, '_')}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                showAlert('✅ PDF baixado com sucesso!', 'success');
+            } catch (err) {
+                showAlert(`⚠️ ${err.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = textoOriginal;
+            }
+        });
+
+        document.getElementById('btnFinalize').addEventListener('click', () => {
+            if (!confirm('Finalizar e encerrar este protocolo? O status mudará para "Encerrado".')) return;
+            const texto = document.getElementById('reportTextarea').value;
+            saveStageData(STAGE_NUM, { texto_relatorio: texto, relatorio_gerado: true, data_finalizacao: new Date().toISOString() });
+            showAlert('✅ Protocolo finalizado e encerrado com sucesso!', 'success');
+            setTimeout(() => goToList(), 1500);
+        });
+
+        renderStageNav(STAGE_NUM);
+        loadData();
+    </script>
+</body>
+</html>

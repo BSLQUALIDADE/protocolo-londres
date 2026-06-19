@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etapa 13 - Diagrama de Ishikawa</title>
+    <link rel="stylesheet" href="shared-styles.css">
+    <link rel="stylesheet" href="extra-styles.css">
+    <style>
+        .ishikawa-svg-container { background: white; border: 1px solid var(--color-border); border-radius: 10px; padding: 16px; margin-top: 20px; overflow-x: auto; }
+        .branch-card { background: var(--color-bg-secondary); border-radius: 10px; padding: 16px; margin-bottom: 14px; border-left: 4px solid var(--color-primary); }
+        .branch-card label { color: var(--color-primary); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <div class="stage-info">Etapa 13 de 17</div>
+                <div id="protocoloHeaderTag"></div>
+                <div class="stage-title">🐟 Diagrama de Ishikawa</div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goToList()">← Painel de Etapas</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="progress-bar-card">
+            <div class="progress-info">
+                <span class="progress-label">Progresso da Investigação</span>
+                <span class="progress-percent">Etapa 13 de 17 (76%)</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" style="width:76%"></div></div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-card-header">
+                <h2>🔬 Análise de Causa e Efeito</h2>
+                <p>Preencha os 6 ramos do diagrama (Método, Mão de obra, Material, Máquina, Medida, Meio ambiente — os "6 M"), descrevendo causas relacionadas a cada categoria. O diagrama visual é gerado automaticamente.</p>
+            </div>
+
+            <div class="alert" id="alert"></div>
+
+            <form id="stageForm">
+                <div class="form-section">
+                    <div class="form-row cols-2">
+                        <div class="form-group">
+                            <label for="categoria">Categoria/Efeito Central <span class="required">*</span></label>
+                            <input type="text" id="categoria" placeholder="Ex: Queda do residente no quarto" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="branch-card">
+                        <label for="ramo_1">📋 Método<span class="hint" style="display:inline;text-transform:none;margin-left:8px;">Procedimentos e protocolos</span></label>
+                        <textarea id="ramo_1" placeholder="Causas relacionadas a métodos e procedimentos"></textarea>
+                    </div>
+                    <div class="branch-card">
+                        <label for="ramo_2">👥 Mão de Obra<span class="hint" style="display:inline;text-transform:none;margin-left:8px;">Equipe, treinamento, escala</span></label>
+                        <textarea id="ramo_2" placeholder="Causas relacionadas à equipe"></textarea>
+                    </div>
+                    <div class="branch-card">
+                        <label for="ramo_3">📦 Material<span class="hint" style="display:inline;text-transform:none;margin-left:8px;">Insumos, medicamentos, suprimentos</span></label>
+                        <textarea id="ramo_3" placeholder="Causas relacionadas a materiais"></textarea>
+                    </div>
+                    <div class="branch-card">
+                        <label for="ramo_4">⚙️ Máquina/Equipamento<span class="hint" style="display:inline;text-transform:none;margin-left:8px;">Equipamentos e dispositivos</span></label>
+                        <textarea id="ramo_4" placeholder="Causas relacionadas a equipamentos"></textarea>
+                    </div>
+                    <div class="branch-card">
+                        <label for="ramo_5">📏 Medida<span class="hint" style="display:inline;text-transform:none;margin-left:8px;">Indicadores, monitoramento, avaliação</span></label>
+                        <textarea id="ramo_5" placeholder="Causas relacionadas a medições/indicadores"></textarea>
+                    </div>
+                    <div class="branch-card">
+                        <label for="ramo_6">🏢 Meio Ambiente<span class="hint" style="display:inline;text-transform:none;margin-left:8px;">Ambiente físico, infraestrutura</span></label>
+                        <textarea id="ramo_6" placeholder="Causas relacionadas ao ambiente"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">📊 Diagrama Visual (Gerado Automaticamente)</div>
+                    <div class="ishikawa-svg-container">
+                        <svg id="ishikawaSvg" viewBox="0 0 900 420" style="width:100%; min-width:700px;">
+                            <!-- gerado via JS -->
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <div>
+                        <button type="submit" class="btn-save">💾 Salvar Etapa</button>
+                        <button type="button" class="btn-back-list" onclick="goToList()">Voltar ao Painel</button>
+                    </div>
+                    <div class="nav-stage-buttons" id="stageNav"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="shared-components.js"></script>
+    <script>
+        const STAGE_NUM = 13;
+
+        const branchLabels = ['Método', 'Mão de Obra', 'Material', 'Máquina', 'Medida', 'Meio Ambiente'];
+
+        function wrapText(text, maxChars) {
+            if (!text) return [''];
+            const words = text.split(' ');
+            const lines = [];
+            let current = '';
+            words.forEach(w => {
+                if ((current + ' ' + w).trim().length > maxChars) {
+                    lines.push(current.trim());
+                    current = w;
+                } else {
+                    current = (current + ' ' + w).trim();
+                }
+            });
+            if (current) lines.push(current);
+            return lines.slice(0, 2); // max 2 linhas por ramo na visualização
+        }
+
+        function renderSvg() {
+            const categoria = getFormValue('categoria') || 'Efeito Central';
+            const ramos = [1,2,3,4,5,6].map(n => getFormValue('ramo_' + n));
+
+            const svg = document.getElementById('ishikawaSvg');
+            const W = 900, H = 420, spineY = H / 2;
+            let html = '';
+
+            // Espinha principal
+            html += `<line x1="60" y1="${spineY}" x2="780" y2="${spineY}" stroke="#0F5C8F" stroke-width="3"/>`;
+            // Cabeça (efeito)
+            html += `<polygon points="780,${spineY-40} 880,${spineY} 780,${spineY+40}" fill="#0F5C8F"/>`;
+            html += `<text x="785" y="${spineY+5}" font-size="13" fill="white" font-weight="700">${escapeXml(truncate(categoria, 22))}</text>`;
+
+            // 6 ramos: 3 acima, 3 abaixo, distribuídos ao longo da espinha
+            const positions = [150, 320, 490]; // posições X ao longo da espinha
+            const colors = ['#2DACA4', '#D4A574', '#0F5C8F'];
+
+            for (let i = 0; i < 3; i++) {
+                const x = positions[i];
+                // Ramo de cima
+                const topLines = wrapText(ramos[i] || branchLabels[i], 28);
+                html += `<line x1="${x}" y1="${spineY - 90}" x2="${x + 60}" y2="${spineY}" stroke="${colors[i]}" stroke-width="2"/>`;
+                html += `<text x="${x - 10}" y="${spineY - 95}" font-size="12" font-weight="700" fill="${colors[i]}">${escapeXml(branchLabels[i])}</text>`;
+                topLines.forEach((line, li) => {
+                    html += `<text x="${x - 10}" y="${spineY - 78 + (li*14)}" font-size="10" fill="#444">${escapeXml(line)}</text>`;
+                });
+
+                // Ramo de baixo
+                const bottomLines = wrapText(ramos[i+3] || branchLabels[i+3], 28);
+                html += `<line x1="${x}" y1="${spineY + 90}" x2="${x + 60}" y2="${spineY}" stroke="${colors[i]}" stroke-width="2"/>`;
+                html += `<text x="${x - 10}" y="${spineY + 105}" font-size="12" font-weight="700" fill="${colors[i]}">${escapeXml(branchLabels[i+3])}</text>`;
+                bottomLines.forEach((line, li) => {
+                    html += `<text x="${x - 10}" y="${spineY + 120 + (li*14)}" font-size="10" fill="#444">${escapeXml(line)}</text>`;
+                });
+            }
+
+            svg.innerHTML = html;
+        }
+
+        function truncate(str, n) { return str.length > n ? str.slice(0, n) + '…' : str; }
+        function escapeXml(str) {
+            return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+
+        document.querySelectorAll('textarea, #categoria').forEach(el => {
+            el.addEventListener('input', renderSvg);
+        });
+
+        async function loadData() {
+            const data = await loadStageData(STAGE_NUM);
+            if (data) {
+                setFormValue('categoria', data.categoria);
+                [1,2,3,4,5,6].forEach(n => setFormValue('ramo_' + n, data['ramo_' + n]));
+            }
+            renderSvg();
+        }
+
+        document.getElementById('stageForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const data = { categoria: getFormValue('categoria') };
+            [1,2,3,4,5,6].forEach(n => data['ramo_' + n] = getFormValue('ramo_' + n));
+            data.svg_diagram = document.getElementById('ishikawaSvg').outerHTML;
+
+            saveStageData(STAGE_NUM, data);
+            showAlert('✓ Etapa 13 salva com sucesso!', 'success');
+        });
+
+        renderStageNav(STAGE_NUM);
+        renderProtocoloHeader('protocoloHeaderTag');
+        loadData();
+    </script>
+</body>
+</html>

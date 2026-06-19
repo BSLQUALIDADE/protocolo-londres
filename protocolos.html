@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protocolos - Protocolo de Londres</title>
+    <link rel="stylesheet" href="shared-styles.css">
+    <link rel="stylesheet" href="extra-styles.css">
+    <style>
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .filter-btn { padding: 8px 16px; border: 2px solid var(--color-border); background: white; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--color-text-secondary); transition: var(--transition); }
+        .filter-btn.active { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <div class="stage-info">Protocolo de Londres</div>
+                <div class="stage-title">📋 Todos os Protocolos</div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goToDashboard()">← Dashboard</button>
+            </div>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="form-card">
+            <div class="form-card-header">
+                <h2>🗂️ Protocolos de Investigação</h2>
+                <p>Lista de todos os protocolos abertos, em análise e encerrados.</p>
+            </div>
+            <div class="filter-bar" id="filterBar">
+                <button class="filter-btn active" data-filter="todos">Todos</button>
+                <button class="filter-btn" data-filter="aberto">Em Andamento</button>
+                <button class="filter-btn" data-filter="em_analise">Em Análise</button>
+                <button class="filter-btn" data-filter="encerrado">Encerrados</button>
+            </div>
+            <div id="protocolosContainer"></div>
+            <div class="form-actions" style="margin-top:20px;">
+                <button class="btn-save" onclick="window.location.href='/novo-protocolo.html?novo=1'">+ Novo Protocolo</button>
+            </div>
+        </div>
+    </div>
+    <script src="shared-components.js"></script>
+    <script>
+        // Lê filtro da URL (?filtro=encerrado) ao chegar do dashboard
+        const _urlFiltro = new URLSearchParams(window.location.search).get('filtro');
+        let currentFilter = _urlFiltro || 'todos';
+        // Ativa o botão correspondente ao filtro da URL
+        document.addEventListener('DOMContentLoaded', () => {
+            if (_urlFiltro) {
+                document.querySelectorAll('.filter-btn').forEach(b => {
+                    b.classList.toggle('active', b.dataset.filter === _urlFiltro);
+                });
+            }
+        });
+        const statusLabels = { rascunho: 'Rascunho', aberto: 'Aberto', em_analise: 'Em Análise', encerrado: 'Encerrado' };
+        function formatDate(iso) {
+            if (!iso) return '-';
+            const d = new Date(iso);
+            return d.toLocaleDateString('pt-BR');
+        }
+        function renderProtocolos() {
+            const container = document.getElementById('protocolosContainer');
+            let protocolos = listarProtocolosComNumero();
+            if (currentFilter === 'aberto') {
+                // "Abertos" mostra tanto aberto quanto em_analise
+                protocolos = protocolos.filter(p => p.status === 'aberto' || p.status === 'em_analise');
+            } else if (currentFilter !== 'todos') {
+                protocolos = protocolos.filter(p => p.status === currentFilter);
+            }
+            if (protocolos.length === 0) {
+                container.innerHTML = `<div class="empty-state">Nenhum protocolo encontrado${currentFilter !== 'todos' ? ' com este filtro' : ''}. ${currentFilter === 'todos' ? 'Crie um novo protocolo para começar.' : ''}</div>`;
+                return;
+            }
+            let html = '';
+            protocolos.forEach(p => {
+                html += `
+                <div class="protocolo-list-item">
+                    <div class="protocolo-list-info">
+                        <div class="protocolo-list-numero">${p.numero}</div>
+                        <div class="protocolo-list-meta">
+                            <span>👤 ${p.nome_residente || '-'}</span>
+                            <span>📅 Aberto: ${formatDate(p.data_abertura)}</span>
+                            ${p.data_encerramento ? `<span>✅ Encerrado: ${formatDate(p.data_encerramento)}</span>` : ''}
+                            <span class="protocolo-status-badge status-${p.status}">${statusLabels[p.status]}</span>
+                        </div>
+                    </div>
+                    <div class="protocolo-list-actions">
+                        <button class="btn-nav" onclick="abrirProtocolo('${p.uuid}')">Abrir</button>
+                        <button class="btn-icon delete" onclick="confirmarExclusao('${p.uuid}', '${p.numero}')" title="Excluir">🗑️</button>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+        function confirmarExclusao(uuid, numero) {
+            if (confirm(`Tem certeza que deseja excluir o protocolo ${numero}? Esta ação não pode ser desfeita.`)) {
+                excluirProtocolo(uuid);
+                renderProtocolos();
+                showAlert(`Protocolo ${numero} excluído.`, 'info');
+            }
+        }
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                renderProtocolos();
+            });
+        });
+        renderProtocolos();
+    </script>
+    <div class="alert" id="alert" style="position:fixed; bottom:20px; right:20px; max-width:360px; z-index:999;"></div>
+</body>
+</html>
