@@ -3,3 +3,10 @@
 node_modules/
 *.log
 .dotenvx*
+backup-*/
+*.zip
+*.backup
+*.bak*
+preencher-teste.js
+test-supabase.js
+usuarios-mock.json
