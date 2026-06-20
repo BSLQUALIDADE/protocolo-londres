@@ -24,6 +24,12 @@ const PORT = process.env.PORT || 3000;
 // SUPABASE CLIENT
 // ============================================================
 const SUPABASE_URL = process.env.SUPABASE_URL;
+console.log('ENV CHECK:', JSON.stringify({
+    SUPABASE_URL: process.env.SUPABASE_URL ? 'EXISTE' : 'FALTANDO',
+    SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY ? 'EXISTE' : 'FALTANDO',
+    NODE_ENV: process.env.NODE_ENV,
+    todas: Object.keys(process.env).filter(k => k.includes('SUPA') || k.includes('ADMIN') || k.includes('EMAIL') || k.includes('RESEND'))
+}));
 const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 
 let supabase = null;
