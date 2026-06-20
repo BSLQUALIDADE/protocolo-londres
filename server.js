@@ -245,13 +245,16 @@ app.patch('/api/protocolos/:uuid', requireSupabase, requireAuth(supabase), async
         console.log('PATCH body:', JSON.stringify(req.body));
         if (process.env.RESEND_API_KEY && req.body.numero && data) {
             console.log('Disparando email para protocolo:', req.body.numero);
+            // Busca dados das etapas para enriquecer o email
+            const { data: etapa1 } = await supabase.from('etapas').select('dados').eq('protocolo_uuid', uuid).eq('numero_etapa', 1).maybeSingle();
+            const { data: etapa2 } = await supabase.from('etapas').select('dados').eq('protocolo_uuid', uuid).eq('numero_etapa', 2).maybeSingle();
             emailNovoProtocolo({
                 para: process.env.EMAIL_NOTIFICACAO || req.usuario.email,
                 numero: data.numero,
-                nomeResidente: data.nome_residente || '-',
-                tipoIncidente: '-',
-                dataOcorrencia: data.data_ocorrencia || '-',
-                unidade: '-',
+                nomeResidente: data.nome_residente || etapa1?.dados?.nome || 'Nao informado',
+                tipoIncidente: etapa2?.dados?.tipo_incidente || 'Nao informado',
+                dataOcorrencia: data.data_ocorrencia || etapa2?.dados?.data_ocorrencia || 'Nao informado',
+                unidade: etapa1?.dados?.unidade || 'Nao informado',
                 responsavel: req.usuario.nome || req.usuario.email
             }).then(r => console.log('Email resultado:', JSON.stringify(r)))
               .catch(e => console.error('Email erro:', e.message));
