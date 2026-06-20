@@ -278,7 +278,8 @@ function calcularTempoMedioDias() {
     return Math.round(totalDias / encerrados.length);
 }
 
-function excluirProtocolo(uuid) {
+async function excluirProtocolo(uuid) {
+    // Remove do localStorage
     const meta = getProtocolosMeta();
     delete meta[uuid];
     saveProtocolosMeta(meta);
@@ -287,6 +288,13 @@ function excluirProtocolo(uuid) {
     }
     if (getProtocoloAtivo() === uuid) {
         localStorage.removeItem('protocolo-ativo');
+    }
+    // Remove do banco
+    try {
+        await fetchAutenticado('/api/protocolos/' + uuid, { method: 'DELETE' });
+        console.log('Protocolo excluido do banco:', uuid);
+    } catch (err) {
+        console.warn('Falha ao excluir do banco:', err.message);
     }
 }
 
