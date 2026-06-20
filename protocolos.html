@@ -112,7 +112,78 @@
         });
         renderProtocolos();
         window.addEventListener('protocolos-sincronizados', () => { renderProtocolos(); });
+
+        // Separação por unidade — só mostra quando filtro é 'todos' ou 'aberto'
+        function renderPorUnidade() {
+            const secao = document.getElementById('secaoUnidades');
+            if (!secao) return;
+            if (currentFilter === 'encerrado') { secao.style.display = 'none'; return; }
+            secao.style.display = 'block';
+
+            const protocolos = listarProtocolosComNumero().filter(p =>
+                p.status === 'aberto' || p.status === 'em_analise'
+            );
+            const porUnidade = {};
+            protocolos.forEach(p => {
+                const u = p.unidade || 'Unidade não informada';
+                if (!porUnidade[u]) porUnidade[u] = [];
+                porUnidade[u].push(p);
+            });
+
+            const grid = document.getElementById('unidadesGrid');
+            if (!grid) return;
+            if (Object.keys(porUnidade).length === 0) {
+                grid.innerHTML = '<div style="text-align:center;color:#98a2b3;padding:20px;font-size:13px;">Nenhum protocolo em andamento.</div>';
+                return;
+            }
+
+            const corUnidade = (u) => {
+                if (u.includes('Cora') || u.includes('Vivace') || u.includes('Bem Viver')) return '#1A6B7A';
+                if (u.includes('Sainte')) return '#6B3FA0';
+                if (u.includes('AssistCare') || u.includes('Gaia')) return '#1A56A0';
+                return '#5A5A5A';
+            };
+            const stCfg = {
+                aberto: { bg: '#ebf2fb', fg: '#1A56A0', l: 'ABERTO' },
+                em_analise: { bg: '#fdf6e3', fg: '#D4A020', l: 'EM ANÁLISE' },
+            };
+
+            let html = '';
+            Object.entries(porUnidade).sort((a,b) => b[1].length - a[1].length).forEach(([unidade, protos]) => {
+                const cor = corUnidade(unidade);
+                const rows = protos.map(p => {
+                    const st = stCfg[p.status] || stCfg.aberto;
+                    const data = p.data_abertura ? new Date(p.data_abertura).toLocaleDateString('pt-BR') : '—';
+                    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #f0f0f0;gap:8px;flex-wrap:wrap;">
+                        <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+                            <span style="font-size:13px;font-weight:700;color:#1a2332;white-space:nowrap;">${p.numero}</span>
+                            <span style="font-size:12px;color:#667085;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.nome_residente || '—'}</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                            <span style="font-size:11px;color:#98a2b3;">${data}</span>
+                            <span style="background:${st.bg};color:${st.fg};font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;">${st.l}</span>
+                            <button onclick="abrirProtocolo('${p.uuid}')" style="padding:4px 12px;background:${cor};color:white;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">Abrir</button>
+                        </div>
+                    </div>`;
+                }).join('');
+
+                html += `<div style="background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.08);margin-bottom:12px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:${cor}15;border-left:4px solid ${cor};">
+                        <span style="font-size:14px;font-weight:700;color:${cor};">🏥 ${unidade}</span>
+                        <span style="background:${cor};color:white;font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;">${protos.length} protocolo${protos.length > 1 ? 's' : ''}</span>
+                    </div>
+                    ${rows}
+                </div>`;
+            });
+            grid.innerHTML = html;
+        }
+        renderPorUnidade();
+        window.addEventListener('protocolos-sincronizados', renderPorUnidade);
     </script>
+    <div id="secaoUnidades" style="margin-top:28px;">
+        <h3 style="font-size:15px;margin-bottom:16px;display:flex;align-items:center;gap:8px;">🏥 Em Andamento por Unidade</h3>
+        <div id="unidadesGrid"></div>
+    </div>
     <div class="alert" id="alert" style="position:fixed; bottom:20px; right:20px; max-width:360px; z-index:999;"></div>
 </body>
 </html>

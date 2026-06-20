@@ -46,22 +46,22 @@
             <p>Acompanhamento de protocolos de investigação e qualidade em saúde</p>
         </div>
         <div class="stats-grid">
-            <div class="dashboard-stat-card" onclick="goToProtocolosList()">
+            <div class="dashboard-stat-card" onclick="window.location.href='/protocolos.html?filtro=aberto'">
                 <div class="dashboard-stat-title">📄 Protocolos Abertos</div>
                 <div class="dashboard-stat-value" id="statAbertos">0</div>
                 <div class="dashboard-stat-desc">Aguardando investigação formal</div>
             </div>
-            <div class="dashboard-stat-card accent" onclick="goToProtocolosList()">
+            <div class="dashboard-stat-card accent" onclick="window.location.href='/protocolos.html?filtro=em_analise'">
                 <div class="dashboard-stat-title">🔍 Em Análise</div>
                 <div class="dashboard-stat-value" id="statEmAnalise">0</div>
                 <div class="dashboard-stat-desc">Investigação em andamento</div>
             </div>
-            <div class="dashboard-stat-card success" onclick="goToProtocolosList()">
+            <div class="dashboard-stat-card success" onclick="window.location.href='/protocolos.html?filtro=encerrado'">
                 <div class="dashboard-stat-title">✅ Encerrados</div>
                 <div class="dashboard-stat-value" id="statEncerrados">0</div>
                 <div class="dashboard-stat-desc">Protocolos finalizados</div>
             </div>
-            <div class="dashboard-stat-card warning" onclick="goToProtocolosList()">
+            <div class="dashboard-stat-card warning" onclick="window.location.href='/protocolos.html?filtro=encerrado'">
                 <div class="dashboard-stat-title">⏱️ Tempo Médio</div>
                 <div class="dashboard-stat-value" id="statTempoMedio">-</div>
                 <div class="dashboard-stat-desc" id="statTempoMedioDesc">Sem dados suficientes</div>
@@ -156,7 +156,7 @@
         }
         function renderStats() {
             const counts = contarProtocolosPorStatus();
-            document.getElementById('statAbertos').textContent = counts.aberto;
+            document.getElementById('statAbertos').textContent = (counts.aberto || 0) + (counts.em_analise || 0);
             document.getElementById('statEmAnalise').textContent = counts.em_analise;
             document.getElementById('statEncerrados').textContent = counts.encerrado;
             const tempoMedio = calcularTempoMedioDias();
