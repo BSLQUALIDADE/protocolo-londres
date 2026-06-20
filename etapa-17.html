@@ -414,6 +414,8 @@
         }
 
         document.getElementById('btnGenerate').addEventListener('click', async () => {
+            document.getElementById('reportTextarea').value = '';
+            document.getElementById('reportEditor').style.display = 'none';
             const totalDone = renderChecklist();
             if (totalDone < 16) {
                 showAlert(`⚠️ Atenção: ${16 - totalDone} etapa(s) ainda não foram preenchidas. O rascunho será gerado com as informações disponíveis — complete as demais etapas para um relatório mais completo.`, 'info');
