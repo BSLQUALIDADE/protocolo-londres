@@ -84,7 +84,7 @@
                 <h3>Relatórios</h3>
                 <p>Ver protocolos encerrados e seus relatórios finais</p>
             </div>
-            <div class="action-card" onclick="showAlert('⚙️ Configurações ainda não implementadas nesta versão.', 'info')">
+            <div class="action-card" onclick="window.location.href='/configuracoes.html'">
                 <div class="icon">⚙️</div>
                 <h3>Configurações</h3>
                 <p>Personalizar preferências do sistema</p>
@@ -144,7 +144,10 @@
                 const elNome = document.getElementById('dashUsuarioNome');
                 const elCargo = document.getElementById('dashUsuarioCargo');
                 if (elNome) elNome.textContent = _u.nome || _u.email;
-                if (elCargo) elCargo.textContent = _u.cargo || '';
+                const cargo = _u.email === 'walter.leite@bslsaude.com.br'
+                    ? '👑 Administrador do Sistema'
+                    : (_u.cargo || '');
+                if (elCargo) elCargo.textContent = cargo;
             });
         }
     }

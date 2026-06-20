@@ -677,6 +677,28 @@ app.get('/api/protocolos/:uuid/logs', requireSupabase, requireAuth(supabase), as
     }
 });
 
+// Lista usuários (admin only)
+app.post('/api/admin/listar-usuarios', async (req, res) => {
+    try {
+        const { chave_admin } = req.body;
+        if (chave_admin !== process.env.ADMIN_SETUP_KEY) {
+            return res.status(403).json({ sucesso: false, erro: 'Chave inválida.' });
+        }
+        const { data, error } = await supabase.auth.admin.listUsers();
+        if (error) throw error;
+        const usuarios = data.users.map(u => ({
+            id: u.id,
+            email: u.email,
+            nome: u.user_metadata?.nome || u.user_metadata?.name || '',
+            cargo: u.user_metadata?.cargo || '',
+            criado_em: u.created_at
+        }));
+        res.json({ sucesso: true, usuarios });
+    } catch (err) {
+        res.status(500).json({ sucesso: false, erro: err.message });
+    }
+});
+
 // ============================================================
 // START
 // ============================================================

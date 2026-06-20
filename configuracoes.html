@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações — Protocolo de Londres</title>
+    <link rel="stylesheet" href="shared-styles.css">
+    <style>
+        .cfg-header { background: linear-gradient(135deg, #1A6B7A, #2DACA4); color: white; padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; }
+        .cfg-header h1 { font-size: 20px; font-weight: 700; margin: 0; }
+        .cfg-body { max-width: 760px; margin: 28px auto; padding: 0 20px; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; overflow: hidden; }
+        .card-header { padding: 14px 20px; border-bottom: 1px solid #e0e6ed; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .card-body { padding: 20px; }
+        .form-row { margin-bottom: 14px; }
+        .form-row label { display: block; font-size: 11px; font-weight: 700; color: #667085; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+        .form-row input { width: 100%; padding: 9px 12px; border: 2px solid #e0e6ed; border-radius: 8px; font-size: 14px; font-family: inherit; box-sizing: border-box; background: #f8fafb; }
+        .form-row input:focus { outline: none; border-color: #1A6B7A; box-shadow: 0 0 0 3px rgba(26,107,122,0.1); }
+        .btn-save { background: linear-gradient(135deg,#1A6B7A,#2DACA4); color: white; border: none; padding: 10px 22px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+        .btn-reset { background: #fdf6e3; color: #D4A020; border: none; padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; margin-left: 8px; }
+        .btn-reset:hover { background: #D4A020; color: white; }
+        .user-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+        .user-row:last-child { border-bottom: none; }
+        .user-name { font-size: 13px; font-weight: 700; color: #1a2332; }
+        .user-email { font-size: 11px; color: #667085; }
+        .user-cargo { font-size: 10px; background: #e3f0f3; color: #1A6B7A; padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-top: 2px; display: inline-block; }
+        .badge-admin { font-size: 10px; background: #fdf6e3; color: #D4A020; padding: 2px 8px; border-radius: 20px; font-weight: 700; }
+        .acesso-negado { text-align: center; padding: 80px 32px; }
+        .negado-icon { font-size: 48px; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+<div class="cfg-header">
+    <div>
+        <h1>⚙️ Configurações do Sistema</h1>
+        <p style="font-size:12px;opacity:0.8;margin:4px 0 0;">Acesso restrito ao administrador</p>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+        <span style="background:rgba(255,255,255,0.2);color:white;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">👑 ADMIN</span>
+        <button onclick="window.location.href='/dashboard.html'" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px;">← Dashboard</button>
+    </div>
+</div>
+
+<div id="acessoNegado" class="acesso-negado" style="display:none;">
+    <div class="negado-icon">🔒</div>
+    <h2>Acesso Restrito</h2>
+    <p>Esta página é exclusiva do administrador.<br>Contate <strong>walter.leite@bslsaude.com.br</strong> para alterações.</p>
+    <br><button class="btn-save" onclick="window.location.href='/dashboard.html'">← Voltar ao Dashboard</button>
+</div>
+
+<div id="configBody" class="cfg-body" style="display:none;">
+
+    <!-- Usuários -->
+    <div class="card">
+        <div class="card-header">👥 Usuários do Sistema</div>
+        <div class="card-body">
+            <div id="listaUsuarios" style="color:#98a2b3;font-size:13px;">Carregando...</div>
+            <hr style="margin:20px 0;border:none;border-top:1px solid #e0e6ed;">
+            <h3 style="font-size:13px;font-weight:700;margin:0 0 14px;">➕ Adicionar Novo Usuário</h3>
+            <div class="form-row"><label>Nome Completo</label><input type="text" id="novoNome" placeholder="Ex: Maria Silva"></div>
+            <div class="form-row"><label>Email</label><input type="email" id="novoEmail" placeholder="Ex: maria.silva@bslsaude.com.br"></div>
+            <div class="form-row"><label>Cargo</label><input type="text" id="novoCargo" placeholder="Ex: Enfermeira de Qualidade"></div>
+            <div class="form-row"><label>Senha Inicial</label><input type="password" id="novaSenhaUsuario" value="Mudar@123"></div>
+            <button class="btn-save" onclick="adicionarUsuario()">Adicionar Usuário</button>
+        </div>
+    </div>
+
+    <!-- Alterar minha senha -->
+    <div class="card">
+        <div class="card-header">🔑 Alterar Minha Senha</div>
+        <div class="card-body">
+            <div class="form-row"><label>Nova Senha</label><input type="password" id="novaSenha" placeholder="Mínimo 8 caracteres"></div>
+            <div class="form-row"><label>Confirmar Senha</label><input type="password" id="confirmarSenha" placeholder="Repita a senha"></div>
+            <button class="btn-save" onclick="alterarSenha()">Salvar Nova Senha</button>
+        </div>
+    </div>
+
+    <!-- Info do sistema -->
+    <div class="card">
+        <div class="card-header">🔧 Informações do Sistema</div>
+        <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div style="background:#f8fafb;border-radius:8px;padding:14px;"><div style="font-size:10px;color:#98a2b3;text-transform:uppercase;margin-bottom:4px;">Versão</div><div style="font-weight:700;">v2.0 — Jun/2026</div></div>
+            <div style="background:#f8fafb;border-radius:8px;padding:14px;"><div style="font-size:10px;color:#98a2b3;text-transform:uppercase;margin-bottom:4px;">Banco de Dados</div><div style="font-weight:700;color:#00875A;">✅ Supabase</div></div>
+            <div style="background:#f8fafb;border-radius:8px;padding:14px;"><div style="font-size:10px;color:#98a2b3;text-transform:uppercase;margin-bottom:4px;">Hospedagem</div><div style="font-weight:700;">Railway</div></div>
+            <div style="background:#f8fafb;border-radius:8px;padding:14px;"><div style="font-size:10px;color:#98a2b3;text-transform:uppercase;margin-bottom:4px;">Notificações</div><div style="font-weight:700;">Resend API</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="alert" id="alert" style="position:fixed;bottom:20px;right:20px;max-width:360px;z-index:999;"></div>
+<script src="shared-components.js"></script>
+<script>
+const ADMIN = 'walter.leite@bslsaude.com.br';
+
+async function init() {
+    if (!exigirAutenticacao()) return;
+    const u = getUsuarioLogado();
+    if (!u || u.email !== ADMIN) {
+        document.getElementById('acessoNegado').style.display = 'block';
+        return;
+    }
+    document.getElementById('configBody').style.display = 'block';
+    await carregarUsuarios();
+}
+
+async function carregarUsuarios() {
+    try {
+        const res = await fetchAutenticado('/api/admin/listar-usuarios', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({chave_admin:'Mudar@123'})
+        });
+        const json = await res.json();
+        if (json.sucesso && json.usuarios) {
+            document.getElementById('listaUsuarios').innerHTML = json.usuarios.map(u => `
+                <div class="user-row">
+                    <div>
+                        <div class="user-name">${u.nome || u.email.split('@')[0]}</div>
+                        <div class="user-email">${u.email}</div>
+                        ${u.cargo ? `<span class="user-cargo">${u.cargo}</span>` : ''}
+                    </div>
+                    <div>
+                        ${u.email === ADMIN ? '<span class="badge-admin">👑 Admin</span>' : `<button class="btn-reset" onclick="resetarSenha('${u.email}')">🔑 Reset Senha</button>`}
+                    </div>
+                </div>`).join('');
+        } else {
+            document.getElementById('listaUsuarios').innerHTML = '<span style="color:#98a2b3">Não foi possível carregar usuários.</span>';
+        }
+    } catch(e) {
+        document.getElementById('listaUsuarios').innerHTML = '<span style="color:#98a2b3">Erro ao carregar.</span>';
+    }
+}
+
+async function adicionarUsuario() {
+    const nome = document.getElementById('novoNome').value.trim();
+    const email = document.getElementById('novoEmail').value.trim();
+    const cargo = document.getElementById('novoCargo').value.trim();
+    const senha = document.getElementById('novaSenhaUsuario').value;
+    if (!nome || !email || !senha) { showAlert('Preencha nome, email e senha.', 'error'); return; }
+    const res = await fetchAutenticado('/api/admin/criar-usuario', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({chave_admin:'Mudar@123', email, senha, nome, cargo})
+    });
+    const json = await res.json();
+    if (json.sucesso) {
+        showAlert('✅ Usuário ' + nome + ' criado!', 'success');
+        document.getElementById('novoNome').value = '';
+        document.getElementById('novoEmail').value = '';
+        document.getElementById('novoCargo').value = '';
+        document.getElementById('novaSenhaUsuario').value = 'Mudar@123';
+        await carregarUsuarios();
+    } else {
+        showAlert('Erro: ' + (json.erro || json.mensagem || 'Tente novamente'), 'error');
+    }
+}
+
+async function resetarSenha(email) {
+    const nova = prompt('Nova senha para ' + email + ':');
+    if (!nova || nova.length < 6) { showAlert('Senha muito curta.', 'error'); return; }
+    const res = await fetchAutenticado('/api/admin/atualizar-usuario', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({chave_admin:'Mudar@123', email, nova_senha: nova})
+    });
+    const json = await res.json();
+    if (json.sucesso) showAlert('✅ Senha de ' + email + ' atualizada!', 'success');
+    else showAlert('Erro: ' + (json.erro || 'Tente novamente'), 'error');
+}
+
+async function alterarSenha() {
+    const nova = document.getElementById('novaSenha').value;
+    const conf = document.getElementById('confirmarSenha').value;
+    if (!nova || !conf) { showAlert('Preencha os dois campos.', 'error'); return; }
+    if (nova !== conf) { showAlert('Senhas não coincidem.', 'error'); return; }
+    if (nova.length < 8) { showAlert('Mínimo 8 caracteres.', 'error'); return; }
+    const res = await fetchAutenticado('/api/admin/atualizar-usuario', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({chave_admin:'Mudar@123', email: ADMIN, nova_senha: nova})
+    });
+    const json = await res.json();
+    if (json.sucesso) { showAlert('✅ Senha alterada!', 'success'); document.getElementById('novaSenha').value = ''; document.getElementById('confirmarSenha').value = ''; }
+    else showAlert('Erro: ' + (json.erro || 'Tente novamente'), 'error');
+}
+
+init();
+</script>
+</body>
+</html>
