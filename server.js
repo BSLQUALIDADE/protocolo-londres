@@ -2,8 +2,11 @@
 // PROTOCOLO DE LONDRES - Server v2 (com Supabase)
 // ============================================================
 
-// Carrega .env.local localmente; no Railway as variáveis já vêm do ambiente
-try { require('dotenv').config({ path: '.env.local' }); } catch(e) {}
+// Carrega variáveis de ambiente (.env.local local ou Railway em produção)
+const fs = require('fs');
+if (fs.existsSync('.env.local')) {
+    require('dotenv').config({ path: '.env.local' });
+}
 const { emailNovoProtocolo, emailLembretePendente, emailProtocoloEncerrado } = require('./email-service');
 const express = require('express');
 const cors = require('cors');
@@ -68,10 +71,22 @@ async function registrarLog(supabase, { protocolo_uuid, usuario, acao, detalhe, 
     }
 }
 
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
+    let supabaseOk = false;
+    if (supabase) {
+        try {
+            const { error } = await supabase.from('protocolos').select('uuid').limit(1);
+            supabaseOk = !error;
+        } catch(e) { supabaseOk = false; }
+    }
     res.json({
         status: 'ok',
-        supabase: supabaseDisponivel,
+        supabase: supabaseOk,
+        supabaseDisponivel,
+        env: {
+            hasUrl: !!process.env.SUPABASE_URL,
+            hasKey: !!process.env.SUPABASE_SECRET_KEY
+        },
         timestamp: new Date().toISOString()
     });
 });
