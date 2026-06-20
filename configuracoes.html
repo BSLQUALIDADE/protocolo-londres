@@ -118,8 +118,14 @@ async function carregarUsuarios() {
                         <div class="user-email">${u.email}</div>
                         ${u.cargo ? `<span class="user-cargo">${u.cargo}</span>` : ''}
                     </div>
-                    <div>
-                        ${u.email === ADMIN ? '<span class="badge-admin">👑 Admin</span>' : `<button class="btn-reset" onclick="resetarSenha('${u.email}')">🔑 Reset Senha</button>`}
+                    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                        ${u.email === ADMIN ? '<span class="badge-admin">👑 Admin</span>' : `
+                            <button class="btn-reset" onclick="resetarSenha('${u.email}')">🔑 Reset</button>
+                            <button class="btn-reset" style="background:#e3f5ee;color:#00875A;" onclick="promoverAdmin('${u.id}','${u.email}',${!!u.is_admin})">
+                                ${u.is_admin ? '⭐ Remover Admin' : '⭐ Tornar Admin'}
+                            </button>
+                            <button class="btn-reset" style="background:#fbe9e9;color:#C0272D;" onclick="deletarUsuario('${u.id}','${u.email}')">🗑️ Excluir</button>
+                        `}
                     </div>
                 </div>`).join('');
         } else {
@@ -177,6 +183,29 @@ async function alterarSenha() {
     });
     const json = await res.json();
     if (json.sucesso) { showAlert('✅ Senha alterada!', 'success'); document.getElementById('novaSenha').value = ''; document.getElementById('confirmarSenha').value = ''; }
+    else showAlert('Erro: ' + (json.erro || 'Tente novamente'), 'error');
+}
+
+async function promoverAdmin(id, email, isAdmin) {
+    const acao = isAdmin ? 'remover admin de' : 'tornar admin';
+    if (!confirm('Tem certeza que deseja ' + acao + ' ' + email + '?')) return;
+    const res = await fetchAutenticado('/api/admin/promover-usuario', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({chave_admin:'Mudar@123', user_id: id, is_admin: !isAdmin})
+    });
+    const json = await res.json();
+    if (json.sucesso) { showAlert('✅ Permissão atualizada!', 'success'); await carregarUsuarios(); }
+    else showAlert('Erro: ' + (json.erro || 'Tente novamente'), 'error');
+}
+
+async function deletarUsuario(id, email) {
+    if (!confirm('Tem certeza que deseja EXCLUIR o usuário ' + email + '? Esta ação não pode ser desfeita.')) return;
+    const res = await fetchAutenticado('/api/admin/deletar-usuario', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({chave_admin:'Mudar@123', user_id: id})
+    });
+    const json = await res.json();
+    if (json.sucesso) { showAlert('✅ Usuário excluído!', 'success'); await carregarUsuarios(); }
     else showAlert('Erro: ' + (json.erro || 'Tente novamente'), 'error');
 }
 

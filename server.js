@@ -677,6 +677,66 @@ app.get('/api/protocolos/:uuid/logs', requireSupabase, requireAuth(supabase), as
     }
 });
 
+// Deleta usuário (admin only)
+app.post('/api/admin/deletar-usuario', async (req, res) => {
+    try {
+        const { chave_admin, user_id } = req.body;
+        if (chave_admin !== process.env.ADMIN_SETUP_KEY)
+            return res.status(403).json({ sucesso: false, erro: 'Chave inválida.' });
+        const { error } = await supabase.auth.admin.deleteUser(user_id);
+        if (error) throw error;
+        res.json({ sucesso: true });
+    } catch (err) {
+        res.status(500).json({ sucesso: false, erro: err.message });
+    }
+});
+
+// Promove usuário a admin (salva no metadata)
+app.post('/api/admin/promover-usuario', async (req, res) => {
+    try {
+        const { chave_admin, user_id, is_admin } = req.body;
+        if (chave_admin !== process.env.ADMIN_SETUP_KEY)
+            return res.status(403).json({ sucesso: false, erro: 'Chave inválida.' });
+        const { error } = await supabase.auth.admin.updateUserById(user_id, {
+            user_metadata: { is_admin: is_admin }
+        });
+        if (error) throw error;
+        res.json({ sucesso: true });
+    } catch (err) {
+        res.status(500).json({ sucesso: false, erro: err.message });
+    }
+});
+
+// Deleta usuário (admin only)
+app.post('/api/admin/deletar-usuario', async (req, res) => {
+    try {
+        const { chave_admin, user_id } = req.body;
+        if (chave_admin !== process.env.ADMIN_SETUP_KEY)
+            return res.status(403).json({ sucesso: false, erro: 'Chave inválida.' });
+        const { error } = await supabase.auth.admin.deleteUser(user_id);
+        if (error) throw error;
+        res.json({ sucesso: true });
+    } catch (err) {
+        res.status(500).json({ sucesso: false, erro: err.message });
+    }
+});
+
+// Promove usuário a admin (salva no metadata)
+app.post('/api/admin/promover-usuario', async (req, res) => {
+    try {
+        const { chave_admin, user_id, is_admin } = req.body;
+        if (chave_admin !== process.env.ADMIN_SETUP_KEY)
+            return res.status(403).json({ sucesso: false, erro: 'Chave inválida.' });
+        const { error } = await supabase.auth.admin.updateUserById(user_id, {
+            user_metadata: { is_admin: is_admin }
+        });
+        if (error) throw error;
+        res.json({ sucesso: true });
+    } catch (err) {
+        res.status(500).json({ sucesso: false, erro: err.message });
+    }
+});
+
 // Lista usuários (admin only)
 app.post('/api/admin/listar-usuarios', async (req, res) => {
     try {
