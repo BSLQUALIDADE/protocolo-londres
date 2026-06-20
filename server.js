@@ -2,7 +2,8 @@
 // PROTOCOLO DE LONDRES - Server v2 (com Supabase)
 // ============================================================
 
-require('dotenv').config({ path: '.env.local' });
+// Carrega .env.local localmente; no Railway as variáveis já vêm do ambiente
+try { require('dotenv').config({ path: '.env.local' }); } catch(e) {}
 const { emailNovoProtocolo, emailLembretePendente, emailProtocoloEncerrado } = require('./email-service');
 const express = require('express');
 const cors = require('cors');
