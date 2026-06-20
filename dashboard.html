@@ -106,7 +106,7 @@
 
                 <!-- Gráfico 2: Barras - Por mês -->
                 <div style="background:white; border-radius:12px; padding:20px; box-shadow:var(--shadow-sm);">
-                    <div style="font-size:13px; font-weight:700; color:var(--color-text-secondary); margin-bottom:12px; text-transform:uppercase; letter-spacing:0.5px;">Protocolos por Mês</div>
+                    <div style="font-size:13px; font-weight:700; color:var(--color-text-secondary); margin-bottom:12px; text-transform:uppercase; letter-spacing:0.5px;">Por Mês e Unidade</div>
                     <canvas id="chartMes" height="200"></canvas>
                 </div>
 
@@ -244,24 +244,49 @@
             }
         });
 
+        // Barras empilhadas por unidade e mês
+        const unidadesUnicas = [...new Set(protocolos.map(p => p.unidade || 'Não informada'))];
+        const coresPorUnidade = [
+            '#1A6B7A','#2DACA4','#6B3FA0','#1A56A0','#D4A020',
+            '#C0272D','#00875A','#D4620A','#5A5A5A','#8B4513'
+        ];
+        const datasetsEmpilhado = unidadesUnicas.map((unidade, idx) => ({
+            label: unidade,
+            data: ultimos6.map(m => {
+                return protocolos.filter(p => {
+                    if (!p.data_abertura) return false;
+                    const d = new Date(p.data_abertura);
+                    const chave = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+                    return chave === m.chave && (p.unidade || 'Não informada') === unidade;
+                }).length;
+            }),
+            backgroundColor: coresPorUnidade[idx % coresPorUnidade.length],
+            borderRadius: 3,
+            borderSkipped: false
+        }));
+
         new Chart(document.getElementById('chartMes'), {
             type: 'bar',
             data: {
                 labels: ultimos6.map(m => m.label),
-                datasets: [{
-                    label: 'Protocolos',
-                    data: ultimos6.map(m => mesesContagem[m.chave]),
-                    backgroundColor: corTeal,
-                    borderRadius: 6,
-                    borderSkipped: false
-                }]
+                datasets: datasetsEmpilhado
             },
             options: {
-                ...defaultOptions,
-                plugins: { legend: { display: false } },
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 9 }, padding: 6, boxWidth: 10 } },
+                    tooltip: {
+                        callbacks: {
+                            footer: (items) => {
+                                const total = items.reduce((s, i) => s + i.parsed.y, 0);
+                                return 'Total: ' + total;
+                            }
+                        }
+                    }
+                },
                 scales: {
-                    y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } }, grid: { color: '#f0f0f0' } },
-                    x: { ticks: { font: { size: 10 } }, grid: { display: false } }
+                    x: { stacked: true, ticks: { font: { size: 10 } }, grid: { display: false } },
+                    y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } }, grid: { color: '#f0f0f0' } }
                 }
             }
         });
