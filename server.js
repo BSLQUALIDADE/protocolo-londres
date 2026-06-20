@@ -677,6 +677,38 @@ app.get('/api/protocolos/:uuid/logs', requireSupabase, requireAuth(supabase), as
     }
 });
 
+// Envia email de recuperação de senha
+app.post('/api/recuperar-senha', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ sucesso: false, erro: 'Email obrigatório.' });
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: (process.env.BASE_URL || 'http://localhost:3000') + '/reset-password.html'
+        });
+        if (error) throw error;
+        res.json({ sucesso: true });
+    } catch (err) {
+        res.status(500).json({ sucesso: false, erro: err.message });
+    }
+});
+
+// Redefine senha com token do email
+app.post('/api/redefinir-senha', async (req, res) => {
+    try {
+        const { access_token, nova_senha } = req.body;
+        if (!access_token || !nova_senha)
+            return res.status(400).json({ sucesso: false, erro: 'Dados obrigatórios.' });
+        const { error } = await supabase.auth.admin.updateUserById(
+            (await supabase.auth.getUser(access_token)).data?.user?.id,
+            { password: nova_senha }
+        );
+        if (error) throw error;
+        res.json({ sucesso: true });
+    } catch (err) {
+        res.status(500).json({ sucesso: false, erro: err.message });
+    }
+});
+
 // Deleta usuário (admin only)
 app.post('/api/admin/deletar-usuario', async (req, res) => {
     try {

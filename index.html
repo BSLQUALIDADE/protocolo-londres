@@ -295,6 +295,9 @@
                 </form>
 
                 <div class="form-footer">Acesso restrito à equipe de qualidade BSL Saúde</div>
+                <div style="text-align:center;margin-top:12px;">
+                    <a href="#" onclick="esqueceuSenha(event)" style="font-size:12px;color:var(--bsl-teal);text-decoration:none;font-weight:600;">Esqueci minha senha</a>
+                </div>
             </div>
         </div>
 
@@ -313,6 +316,29 @@
 
         function mostrarErro(msg)    { alertEl.textContent = msg; alertEl.className = 'alert error show'; }
         function mostrarSucesso(msg) { alertEl.textContent = msg; alertEl.className = 'alert success show'; }
+
+        async function esqueceuSenha(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            if (!email) {
+                alertEl.textContent = 'Digite seu email antes de clicar em "Esqueci minha senha".';
+                alertEl.className = 'alert error show';
+                return;
+            }
+            try {
+                const res = await fetch('/api/recuperar-senha', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                alertEl.textContent = '✅ Email de recuperação enviado para ' + email + '. Verifique sua caixa de entrada.';
+                alertEl.className = 'alert success show';
+            } catch (err) {
+                alertEl.textContent = 'Erro ao enviar email. Tente novamente.';
+                alertEl.className = 'alert error show';
+            }
+        }
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
