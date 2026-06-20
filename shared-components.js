@@ -216,6 +216,28 @@ function listarProtocolos() {
     const meta = getProtocolosMeta();
     return Object.values(meta).sort((a, b) => new Date(b.ultima_atualizacao) - new Date(a.ultima_atualizacao));
 }
+async function sincronizarProtocolosDoBanco(onComplete) {
+    try {
+        const res = await fetchAutenticado('/api/protocolos');
+        if (!res || !res.ok) { if (onComplete) onComplete(); return; }
+        const json = await res.json();
+        if (!json.sucesso || !Array.isArray(json.protocolos)) { if (onComplete) onComplete(); return; }
+        const meta = getProtocolosMeta();
+        json.protocolos.forEach(p => {
+            const local = meta[p.uuid];
+            if (!local || new Date(p.ultima_atualizacao) > new Date(local.ultima_atualizacao || 0)) {
+                meta[p.uuid] = { uuid: p.uuid, numero: p.numero, status: p.status, nome_residente: p.nome_residente, data_ocorrencia: p.data_ocorrencia, data_abertura: p.data_abertura, data_encerramento: p.data_encerramento, ultima_atualizacao: p.ultima_atualizacao, unidade: p.unidade || local?.unidade || null };
+            }
+        });
+        saveProtocolosMeta(meta);
+        if (onComplete) onComplete();
+    } catch (err) { if (onComplete) onComplete(); }
+}
+(function() {
+    const token = localStorage.getItem('auth-token');
+    if (!token) return;
+    setTimeout(() => { sincronizarProtocolosDoBanco(() => { window.dispatchEvent(new CustomEvent('protocolos-sincronizados')); }); }, 300);
+})();
 
 function listarProtocolosComNumero() {
     return listarProtocolos().filter(p => p.numero).map(p => {
