@@ -152,9 +152,9 @@ function extrairDadosEstrutados(secoes, protocolo) {
             dados.ppc = c;
         } else if (t.includes('fator') || t.includes('contribuint')) {
             dados.fatores = c;
-        } else if (t.includes('segunda') || t.includes('vítima')) {
+        } else if (t.includes('suporte') || t.includes('segunda') || t.includes('vítima')) {
             dados.segundaVitima = s;
-        } else if (t.includes('disclosure') || t.includes('comunicação')) {
+        } else if (t.includes('disclosure_skip')) {
             dados.disclosure = s;
         } else if (t.includes('jurídic')) {
             dados.juridico = s;
