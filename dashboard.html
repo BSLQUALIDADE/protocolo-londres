@@ -21,6 +21,9 @@
         .action-card .icon { font-size: 30px; margin-bottom: 10px; }
         .action-card h3 { font-size: 15px; color: var(--color-text-primary); margin-bottom: 6px; }
         .action-card p { font-size: 12px; color: var(--color-text-secondary); line-height: 1.4; }
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+        @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 600px) { .charts-grid { grid-template-columns: 1fr; } }
         .status-banner { background: var(--color-primary-light); border-radius: 10px; padding: 18px 22px; display: flex; align-items: center; gap: 12px; }
         .status-banner .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--color-success); flex-shrink: 0; }
         .status-banner strong { color: var(--color-primary); }
@@ -96,7 +99,7 @@
         <!-- ============================================================ -->
         <div style="margin-top: 28px;">
             <h3 style="font-size:15px; margin-bottom:16px; display:flex; align-items:center; gap:8px;">📊 Análise Estatística</h3>
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
+            <div class="charts-grid">
 
                 <!-- Gráfico 1: Pizza - Por tipo de incidente -->
                 <div style="background:white; border-radius:12px; padding:20px; box-shadow:var(--shadow-sm);">
