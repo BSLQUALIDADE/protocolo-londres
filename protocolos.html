@@ -86,6 +86,23 @@
                             ${p.data_encerramento ? `<span>✅ Encerrado: ${formatDate(p.data_encerramento)}</span>` : ''}
                             <span class="protocolo-status-badge status-${p.status}">${statusLabels[p.status]}</span>
                         </div>
+                        ${(function() {
+                            const etapas = calcularProgresso(p.uuid);
+                            const pct = p.status === 'encerrado' ? 100 : Math.round(etapas / 16 * 100);
+                            const dias = calcularDiasAberto(p.data_abertura);
+                            const diasTxt = dias === 0 ? 'Aberto hoje' : dias === 1 ? '1 dia aberto' : dias + ' dias aberto';
+                            const cor = pct === 100 ? '#00875A' : pct >= 50 ? '#D4A020' : '#1A6B7A';
+                            const etapaTxt = p.status === 'encerrado' ? 'Concluído' : `Etapa ${etapas} de 16 concluídas`;
+                            return `<div style="margin-top:8px;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                                    <span style="font-size:11px;color:#6B7280;">${etapaTxt}</span>
+                                    <span style="font-size:11px;color:#6B7280;">🕐 ${diasTxt} · ${pct}%</span>
+                                </div>
+                                <div style="background:#E5E7EB;border-radius:99px;height:6px;overflow:hidden;">
+                                    <div style="width:${pct}%;height:100%;background:${cor};border-radius:99px;transition:width 0.3s;"></div>
+                                </div>
+                            </div>`;
+                        })()}
                     </div>
                     <div class="protocolo-list-actions">
                         <button class="btn-nav" onclick="abrirProtocolo('${p.uuid}')">Abrir</button>
@@ -95,6 +112,23 @@
             });
             container.innerHTML = html;
         }
+        function calcularProgresso(uuid) {
+            let etapasConcluidas = 0;
+            for (let i = 1; i <= 16; i++) {
+                const chave = `protocolo:${uuid}:etapa-${i}-completa`;
+                if (localStorage.getItem(chave) === 'true') etapasConcluidas++;
+            }
+            return etapasConcluidas;
+        }
+
+        function calcularDiasAberto(dataAbertura) {
+            if (!dataAbertura) return 0;
+            const inicio = new Date(dataAbertura);
+            const hoje = new Date();
+            const diff = Math.floor((hoje - inicio) / (1000 * 60 * 60 * 24));
+            return diff;
+        }
+
         function confirmarExclusao(uuid, numero) {
             if (confirm(`Tem certeza que deseja excluir o protocolo ${numero}? Esta ação não pode ser desfeita.`)) {
                 excluirProtocolo(uuid);
