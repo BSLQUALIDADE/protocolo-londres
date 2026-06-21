@@ -89,8 +89,8 @@
                         ${(function() {
                             const etapas = calcularProgresso(p.uuid);
                             const pct = p.status === 'encerrado' ? 100 : Math.round(etapas / 16 * 100);
-                            const dias = calcularDiasAberto(p.data_abertura);
-                            const diasTxt = dias === 0 ? 'Aberto hoje' : dias === 1 ? '1 dia aberto' : dias + ' dias aberto';
+                            const dias = calcularDiasAberto(p.data_abertura, p.data_encerramento);
+                            const diasTxt = p.data_encerramento ? (dias === 1 ? '1 dia aberto' : dias + ' dias aberto') : dias === 0 ? 'Aberto hoje' : dias === 1 ? '1 dia aberto' : dias + ' dias aberto';
                             const cor = pct === 100 ? '#00875A' : pct >= 50 ? '#D4A020' : '#1A6B7A';
                             const etapaTxt = p.status === 'encerrado' ? 'Concluído' : `Etapa ${etapas} de 16 concluídas`;
                             return `<div style="margin-top:8px;">
@@ -121,11 +121,11 @@
             return etapasConcluidas;
         }
 
-        function calcularDiasAberto(dataAbertura) {
+        function calcularDiasAberto(dataAbertura, dataEncerramento) {
             if (!dataAbertura) return 0;
             const inicio = new Date(dataAbertura);
-            const hoje = new Date();
-            const diff = Math.floor((hoje - inicio) / (1000 * 60 * 60 * 24));
+            const fim = dataEncerramento ? new Date(dataEncerramento) : new Date();
+            const diff = Math.floor((fim - inicio) / (1000 * 60 * 60 * 24));
             return diff;
         }
 
