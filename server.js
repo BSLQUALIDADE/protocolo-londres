@@ -333,6 +333,12 @@ app.put('/api/protocolos/:uuid/etapas/:numero', requireSupabase, requireAuth(sup
         }
 
         // Lógica de negócio: gerar número do protocolo se etapa 1+2 completas
+        if (numero === '2' && dados.tipo_incidente) {
+            await supabase.from('protocolos').update({
+                tipo_incidente: dados.tipo_incidente,
+                ultima_atualizacao: new Date().toISOString()
+            }).eq('uuid', uuid);
+        }
         if (numero === '1' || numero === '2') {
             await tentarGerarNumeroProtocolo(uuid);
         }
