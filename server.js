@@ -797,6 +797,20 @@ app.post('/api/admin/listar-usuarios', async (req, res) => {
     }
 });
 
+
+// ============================================================
+// KEEPALIVE: evita pausa do Supabase Free (pinga a cada 4 dias)
+// ============================================================
+const QUATRO_DIAS = 4 * 24 * 60 * 60 * 1000;
+setInterval(async () => {
+    try {
+        const { count } = await supabase.from('protocolos').select('*', { count: 'exact', head: true });
+        console.log(`[keepalive] Supabase ping OK — ${count} protocolo(s) no banco.`);
+    } catch (err) {
+        console.warn('[keepalive] Falha no ping Supabase:', err.message);
+    }
+}, QUATRO_DIAS);
+
 // ============================================================
 // START
 // ============================================================
